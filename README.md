@@ -1,17 +1,18 @@
 # Qwen release cadence
 
-Track Qwen model releases and updates since 2023. Compare release gaps and estimates of when the next event might happen.
+Track Qwen model releases and updates since 2023. Compare release gaps and estimated release dates.
 
 [Open the dashboard](https://nerdalytics.github.io/qwen-model-release-cadence-dashmodel/)
 
-## Using the dashboard
+## Use the dashboard
 
 - Choose All models, Core, or Coding and select a date range.
 - Turn off Include updates for a narrower view of new model releases.
 - Select a release to see its official announcement and source notes.
-- Search the release log or export the current results as CSV.
+- Search the release log or export the results as CSV.
+- Scroll or pinch to zoom. Use the controls below the graph to zoom or move through dates.
 
-## Reading the estimates
+## Read the estimates
 
 The dashboard shows two timing estimates. The average uses the release gaps in your selected range. The exponential moving average gives more weight to recent gaps.
 
