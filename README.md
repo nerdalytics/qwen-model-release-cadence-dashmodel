@@ -27,3 +27,5 @@ The history covers selected core and coding milestones, not every Qwen model. So
 See the [source audit](SOURCE_AUDIT.md) for corrections and coverage limits.
 
 Forecasts are separate for each model type. Select Max, Plus, Flash or a parameter size to see its history. Past estimates stay marked as past; types with little data show a limited-history warning. The date-range filter changes the graph, not the forecast.
+
+Compare ten forecasting methods, or use the checkboxes to show only the ones you want. Your algorithm selection is remembered in your browser. Open a method’s calculation details for its assumptions and historical errors. Probability windows are model-based estimates, not release announcements.

@@ -8,7 +8,7 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE_URL = 'https://nerdalytics.github.io/qwen-model-release-cadence-dashmodel/'
-DESCRIPTION = 'Qwen releases and updates, with separate EMA and average release estimates for each model type. Estimates are not announcements.'
+DESCRIPTION = 'Qwen releases and updates, with ten selectable forecast methods and separate release estimates for each model type. Estimates are not announcements.'
 source = (ROOT / 'favicon.svg').read_bytes()
 for filename, size in [('favicon-32x32.png', 32), ('favicon-48x48.png', 48), ('apple-touch-icon.png', 180), ('icon-192.png', 192), ('icon-512.png', 512)]:
     png = cairosvg.svg2png(bytestring=source, output_width=size, output_height=size)
