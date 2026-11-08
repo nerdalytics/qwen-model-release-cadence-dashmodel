@@ -21,3 +21,5 @@ for(const name of ['Qwen3.5','Qwen3.6-Plus','Qwen3.7-Max','Qwen3.8-Max']){const 
 for(const generation of ['3.5','3.6','3.7','3.8'])assert.equal(payload.releases.filter(r=>r.generation===generation&&r.modelTypes.includes('Generation')).length,1);
 for(const name of ['Qwen3.5 medium-size expansion','Qwen3.5 small-size expansion','Qwen3.6-35B-A3B','Qwen3.6-27B','Qwen3.7-Plus'])assert.equal(payload.releases.find(r=>r.name===name).event,'release');
 assert.ok(!payload.releases.find(r=>r.name==='Qwen3.7-Plus').modelTypes.includes('Generation'));
+
+const flash=payload.releases.find(r=>r.name==='Qwen3.6-35B-A3B');assert.ok(flash.aliases.includes('Qwen3.6-Flash'));assert.ok(flash.modelTypes.includes('Flash'));assert.equal(flash.date,'2026-04-15');assert.equal(payload.releases.filter(r=>r.aliases?.includes('Qwen3.6-Flash')).length,1);const flashHistory=F.summarize(payload.releases.filter(r=>r.modelTypes.includes('Flash')),today);assert.equal(flashHistory.gaps[0],133);assert.equal(flashHistory.emaDate,'2027-01-06');
