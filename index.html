@@ -2,11 +2,12 @@
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#090b13"><title>Cadence — Qwen Release Radar</title>
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="data-quality.css">
 </head>
 <body>
 <header class="topbar"><a class="brand" href="#" aria-label="Cadence home"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3 22V10l8-5 8 5v12l-8 5zM13 22V10l8-5 8 5v12l-8 5z"></path></svg><span>cadence<span class="brand-dot">.</span></span></a><div class="brand-caption">MODEL INTELLIGENCE</div><nav aria-label="Main navigation"><button class="nav-link active" id="overview-nav">Overview</button><button class="nav-link" id="log-nav">Release log</button><button class="nav-link" id="method-nav">Methodology <span>↗</span></button></nav><div class="header-right"><span class="demo-badge"><i></i> Loading dataset</span><button class="avatar" id="about" aria-label="About this workspace">DT</button></div></header>
 <main>
-<div class="page-heading"><div><div class="eyebrow"><span class="tiny-mark"></span> RELEASE INTELLIGENCE <span class="eyebrow-slash">/</span> QWEN</div><h1>Qwen release radar<span class="heading-dot">.</span></h1><p>Every release. One timeline. A clearer picture of what comes next.</p></div><button class="button" id="export"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v9m-3-3 3 3 3-3M4 13v4h12v-4"></path></svg>Export data</button></div>
+<div class="page-heading"><div><div class="eyebrow"><span class="tiny-mark"></span> RELEASE INTELLIGENCE <span class="eyebrow-slash">/</span> QWEN</div><h1>Qwen release radar<span class="heading-dot">.</span></h1><p>Release milestones. One timeline. A clearer picture of what comes next.</p></div><button class="button" id="export"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v9m-3-3 3 3 3-3M4 13v4h12v-4"></path></svg>Export data</button></div>
 <section class="metrics" aria-label="Release summary">
 <article class="metric featured"><div class="metric-label">CORE SERIES CADENCE <span class="small-chip">EMA</span><span class="metric-symbol">⌁</span></div><div class="metric-value">—</div><div class="metric-foot">Waiting for data</div><div class="sparkline"><svg viewBox="0 0 150 38"><path d=""></path></svg></div></article>
 <article class="metric"><div class="metric-label">MEAN RELEASE INTERVAL <span class="metric-symbol">◷</span></div><div class="metric-value">—</div><div class="metric-foot">Waiting for data</div></article>
@@ -20,10 +21,11 @@
 <div class="timeline-bottom"><div class="legend"><span><i class="legend-line yellow"></i> Core EMA</span><span><i class="legend-line cyan"></i> Coding EMA</span><span><i class="legend-stroke white"></i> Baseline / variant</span><span><i class="legend-dash"></i> Projected</span></div><div class="timeline-note"><span>↔</span> <span id="scroll-note">Waiting for data</span></div></div>
 </section>
 <div class="lower-grid"><section class="panel release-panel" id="release-log"><div class="panel-head"><div><h2>Release log <span class="count" id="release-count">—</span></h2><p>The milestones behind the timeline.</p></div><label class="search"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8" cy="8" r="5"></circle><path d="m12 12 4 4"></path></svg><input type="search" id="search" placeholder="Find a model…" aria-label="Search release log" style=""><kbd>/</kbd></label></div><div class="table-wrap"><table><thead><tr><th>MODEL</th><th>RELEASE DATE</th><th>TYPE</th><th>STATUS</th><th><span class="sr-only">Details</span></th></tr></thead><tbody id="releases"></tbody></table></div><div class="table-foot"><span id="table-summary">Waiting for data</span><button class="text-button" id="all-releases">View all releases <span>↗</span></button></div></section>
-<aside class="panel outlook"><div class="outlook-heading"><span class="eyebrow">ON THE HORIZON</span><span class="orbit-icon">✳</span></div><h2>The release rhythm.</h2><p>Cadence and forecasts are calculated from the external release dataset.</p><div class="prediction"><div><span>PROJECTED DATE</span><strong>—</strong></div><svg viewBox="0 0 44 44" aria-hidden="true"><path d="M10 33 33 10M10 10h23v23"></path></svg></div><div class="outlook-foot"><span class="yellow-dot"></span> Calculated from demo dates <span>α = 0.20</span></div></aside></div>
+<aside class="panel outlook"><div class="outlook-heading"><span class="eyebrow">ON THE HORIZON</span><span class="orbit-icon">✳</span></div><h2>The release rhythm.</h2><p>Cadence and forecasts are calculated from the external release dataset.</p><div class="prediction"><div><span>PROJECTED DATE</span><strong>—</strong></div><svg viewBox="0 0 44 44" aria-hidden="true"><path d="M10 33 33 10M10 10h23v23"></path></svg></div><div class="outlook-foot"><span class="yellow-dot"></span> Waiting for release data <span>α = 0.20</span></div></aside></div>
 <footer><span><b>cadence.</b> A little signal in the noise.</span><span>Data source: data/releases.json <button id="footer-method" aria-label="Read data methodology">ⓘ</button></span></footer>
 </main>
 <dialog id="details"><div class="dialog-top"><span class="eyebrow" id="dialog-eyebrow">RELEASE DETAILS</span><button id="close-dialog" aria-label="Close dialog">×</button></div><div id="dialog-content"></div></dialog><div class="toast" id="toast" role="status"></div>
-<script src="app.js"></script>
+<script src="app.js" defer></script>
+<script src="data-quality.js" defer></script>
 
 </body></html>
