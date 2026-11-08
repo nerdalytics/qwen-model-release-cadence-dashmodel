@@ -8,7 +8,7 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE_URL = 'https://nerdalytics.github.io/qwen-model-release-cadence-dashmodel/'
-DESCRIPTION = 'Qwen releases and updates, with ten selectable forecast methods and separate release estimates for each model type. Estimates are not announcements.'
+DESCRIPTION = 'Explore when Qwen models could be released using historical gaps and ten statistical forecasting methods.'
 source = (ROOT / 'favicon.svg').read_bytes()
 for filename, size in [('favicon-32x32.png', 32), ('favicon-48x48.png', 48), ('apple-touch-icon.png', 180), ('icon-192.png', 192), ('icon-512.png', 512)]:
     png = cairosvg.svg2png(bytestring=source, output_width=size, output_height=size)
@@ -20,7 +20,7 @@ png = cairosvg.svg2png(bytestring=source, output_width=256, output_height=256)
 Image.open(io.BytesIO(png)).save(ROOT / 'favicon.ico', sizes=[(16, 16), (32, 32), (48, 48)])
 manifest = {
     'id': './',
-    'name': 'Cadence | Qwen release radar',
+    'name': 'Cadence | Qwen release timing',
     'short_name': 'Cadence',
     'description': DESCRIPTION,
     'lang': 'en',
@@ -44,11 +44,11 @@ html = re.sub(r'<script\b[^>]*\btype="application/ld\+json"[^>]*>.*?</script>\s*
 structured = {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
-    'name': 'Cadence | Qwen release radar',
+    'name': 'Cadence | Qwen release timing',
     'url': BASE_URL,
     'description': DESCRIPTION,
     'inLanguage': 'en',
-    'about': {'@type': 'Thing', 'name': 'Qwen model release cadence'},
+    'about': {'@type': 'Thing', 'name': 'Qwen model release timing'},
 }
 head = '''<meta name="color-scheme" content="light dark">
 <link rel="icon" type="image/x-icon" sizes="16x16 32x32 48x48" href="./favicon.ico">

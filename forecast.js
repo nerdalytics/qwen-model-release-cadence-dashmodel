@@ -1,16 +1,16 @@
 (function(root){
 const DAY=86400000,ALPHA=.2;
 const algorithms=[
- {id:'mean',name:'Historical mean',color:'#24e3df',min:1,description:'Mean of all distinct-date gaps. No trend assumption.'},
+ {id:'mean',name:'Historical mean',color:'#24e3df',min:1,description:'Averages the gaps between all recorded release dates.'},
  {id:'ema',name:'EMA',color:'#edfa57',min:1,description:'α = 0.20. The first gap starts the calculation. Older gaps can dominate when few intervals are available.'},
  {id:'rolling-mean',name:'Recent mean',color:'#88b8ff',min:1,description:'Mean of the last three gaps, or all available gaps if fewer.'},
  {id:'rolling-median',name:'Recent median',color:'#ffcb92',min:1,description:'Median of the last three gaps. Less sensitive to one unusually long interval.'},
  {id:'weighted',name:'Weighted mean',color:'#e2a5ff',min:1,description:'Last three gaps weighted 20%, 30%, 50%, oldest to newest. Available weights are renormalized.'},
  {id:'holt',name:'Holt trend',color:'#ff9ac0',min:3,description:'Interval level and trend. α = 0.50, β = 0.30. The starting level is the first gap. The starting trend is the second gap minus the first.'},
  {id:'damped-holt',name:'Damped Holt',color:'#a9dfa0',min:3,description:'Holt with damping φ = 0.80, including during level and trend updates. Projects a weaker continuation of the interval trend.'},
- {id:'regression',name:'Linear interval trend',color:'#ffd85b',min:3,description:'Fits a straight line to gap length against gap number, using all gaps. Predicts the next interval, not a line through calendar dates.'},
+ {id:'regression',name:'Linear interval trend',color:'#ffd85b',min:3,description:'Fits a straight line to gap length against gap number and extends it by one step.'},
  {id:'renewal',name:'Lognormal renewal',color:'#81e2f4',min:3,description:'Fits a lognormal waiting-time distribution to the gaps. The point estimate is the median. The estimated window covers the 10th to 90th percentiles.'},
- {id:'bayesian',name:'Bayesian partial pooling',color:'#d3d8ef',min:1,description:'Uses exponential waiting times with a Gamma rate prior. Related types set the prior mean gap and shape is 2. The model\'s own gaps update the rate. The point estimate is the predictive mean. The window covers the 10th to 90th percentiles. The prior is empirical Bayes, not a fully fitted hierarchy.'}
+ {id:'bayesian',name:'Bayesian partial pooling',color:'#d3d8ef',min:1,description:'Uses exponential waiting times with a Gamma rate prior. Related types set the prior mean gap and shape is 2. The model\'s own gaps update the rate. The point estimate is the predictive mean. The window covers the 10th to 90th percentiles. The prior is estimated from related types.'}
 ];
 function summarize(records,now=new Date()){
  const rows=[...records].sort((a,b)=>a.date.localeCompare(b.date)),dates=[...new Set(rows.map(r=>r.date))],gaps=dates.slice(1).map((d,i)=>(Date.parse(d)-Date.parse(dates[i]))/DAY);
@@ -46,7 +46,7 @@ function peerPrior(records,type){
 }
 function rawForecast(summary,algorithm,options={}){
  const {gaps,last}=summary,n=gaps.length,id=algorithm.id;
- if(n<algorithm.min)return {reason:`Needs ${algorithm.min} interval${algorithm.min===1?'':'s'}; ${n} available.`};
+ if(n<algorithm.min)return {reason:`Requires ${algorithm.min} ${algorithm.min===1?'gap':'gaps'}. This history has ${n}.`};
  let gap,low=null,high=null,note='',conditional=false;
  const recent=gaps.slice(-3);
  if(id==='mean')gap=summary.mean;
@@ -54,8 +54,8 @@ function rawForecast(summary,algorithm,options={}){
  if(id==='rolling-mean')gap=average(recent);
  if(id==='rolling-median')gap=median(recent);
  if(id==='weighted'){const weights=[.2,.3,.5].slice(-recent.length);gap=recent.reduce((sum,v,i)=>sum+v*weights[i],0)/weights.reduce((a,b)=>a+b,0)}
- if(id==='holt'||id==='damped-holt'){const result=holt(gaps,id==='holt'?1:.8);gap=result.gap;note=`Level ${result.level.toFixed(1)}d; trend ${result.trend.toFixed(1)}d per interval.`}
- if(id==='regression'){const result=regression(gaps);gap=result.gap;note=`Slope ${result.slope.toFixed(1)}d per interval.`}
+ if(id==='holt'||id==='damped-holt'){const result=holt(gaps,id==='holt'?1:.8);gap=result.gap;note=`Fitted gap level: ${result.level.toFixed(1)} days. Change per interval: ${result.trend.toFixed(1)} days.`}
+ if(id==='regression'){const result=regression(gaps);gap=result.gap;note=`Change per interval: ${result.slope.toFixed(1)} days.`}
  const today=new Date(options.now||new Date()).toISOString().slice(0,10),elapsed=last?Math.max(0,(Date.parse(today)-Date.parse(last.date))/DAY):0;
  if(id==='renewal'){
   const logs=gaps.map(Math.log),mu=average(logs),sigma=Math.sqrt(average(logs.map(v=>(v-mu)**2)));
@@ -67,9 +67,9 @@ function rawForecast(summary,algorithm,options={}){
   const prior=peerPrior(options.peers||[],options.type||'');if(!prior)return {reason:'Needs at least 3 non-overlapping intervals from related peer types.'};
   const shape=2+n,rate=prior.mean+gaps.reduce((a,b)=>a+b,0)+(options.conditioned?elapsed:0),base=options.conditioned?elapsed:0;
   gap=base+rate/(shape-1);low=base+rate*(Math.pow(.9,-1/shape)-1);high=base+rate*(Math.pow(.1,-1/shape)-1);conditional=!!options.conditioned&&elapsed>0;
-  note=`Peers: ${prior.peers.join(', ')}; ${prior.count} distinct peer intervals. Prior shape 2, rate ${prior.mean.toFixed(1)}d. Posterior shape ${shape}, rate ${rate.toFixed(1)}d. Assumes constant release rate; not acceleration.`;
+  note=`Peers: ${prior.peers.join(', ')}; ${prior.count} distinct peer intervals. Prior shape 2, rate ${prior.mean.toFixed(1)}d. Posterior shape ${shape}, rate ${rate.toFixed(1)}d. Assumes a constant release rate.`;
  }
- if(!Number.isFinite(gap)||gap<=0)return {reason:'Trend predicts a non-positive interval. No date is shown instead of clamping the trend.',rawGap:gap};
+ if(!Number.isFinite(gap)||gap<=0)return {reason:'The fitted trend predicts a gap of zero or fewer days, so a date cannot be calculated.',rawGap:gap};
  const date=addDays(last.date,gap),lowDate=low===null?null:addDays(last.date,low),highDate=high===null?null:addDays(last.date,high);
  if(!date||(high!==null&&!highDate))return {reason:'Estimated date is outside the supported range through 2100.'};
  return {gap,date,lowDate,highDate,note,conditional,age:(Date.parse(today)-Date.parse(date))/DAY,limited:n<(algorithm.min>=3?6:3),sample:n};

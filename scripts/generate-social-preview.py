@@ -44,7 +44,7 @@ def text(px, py, content, size=18, color='#535e67', weight=400, anchor='start'):
     return f'<text x="{px:.2f}" y="{py:.2f}" font-size="{size}" fill="{color}" font-weight="{weight}" text-anchor="{anchor}">{escape(str(content))}</text>'
 
 
-svg = ['<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">', '<title id="title">Qwen generation release cadence and forecast estimates</title>', f'<desc id="desc">{len(rows)} events since {dates[0].year}. Latest event {dates[-1]}. EMA {ema:.1f} days estimates {ema_date}. Average {mean:.1f} days estimates {mean_date}. Estimates are not announcements.</desc>', '<rect width="1200" height="630" fill="#f6f6f3"/>', '<g font-family="DejaVu Sans, sans-serif">', '<rect x="36" y="36" width="1128" height="558" rx="18" fill="#ffffff" stroke="#ced1d0"/>', text(72, 83, 'cadence.', 24, '#b62b34', 700), text(1128, 83, 'nerdalytics / QWEN', 16, anchor='end'), text(72, 143, 'Qwen release radar.', 46, '#18222b', 700), text(72, 177, f'Generation history  ·  Latest generation entry {dates[-1]}', 20), '<line x1="72" y1="205" x2="1128" y2="205" stroke="#ced1d0"/>', text(72, 235, f'EMA  {ema:.1f} days', 22, '#b62b34', 700), text(416, 235, f'Average  {mean:.1f} days', 22, '#076878', 700), text(1128, 234, 'GENERATION · FULL HISTORY', 14, anchor='end')]
+svg = ['<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">', '<title id="title">Qwen generation release timing</title>', f'<desc id="desc">{len(rows)} events since {dates[0].year}. Latest event {dates[-1]}. EMA {ema:.1f} days estimates {ema_date}. Average {mean:.1f} days estimates {mean_date}.</desc>', '<rect width="1200" height="630" fill="#f6f6f3"/>', '<g font-family="DejaVu Sans, sans-serif">', '<rect x="36" y="36" width="1128" height="558" rx="18" fill="#ffffff" stroke="#ced1d0"/>', text(72, 83, 'cadence.', 24, '#b62b34', 700), text(1128, 83, 'nerdalytics / QWEN', 16, anchor='end'), text(72, 143, 'When could Qwen release next?', 46, '#18222b', 700), text(72, 177, f'Generation history  ·  Latest generation entry {dates[-1]}', 20), '<line x1="72" y1="205" x2="1128" y2="205" stroke="#ced1d0"/>', text(72, 235, f'EMA  {ema:.1f} days', 22, '#b62b34', 700), text(416, 235, f'Average  {mean:.1f} days', 22, '#076878', 700), text(1128, 234, 'GENERATION · FULL HISTORY', 14, anchor='end')]
 for tick in range(0, maximum + 1, 40):
     py = y(tick)
     svg.append(f'<line x1="{left}" y1="{py:.2f}" x2="{right}" y2="{py:.2f}" stroke="#ced1d0" stroke-dasharray="3 5"/>')
@@ -63,7 +63,7 @@ svg.append(f'<line x1="{left}" y1="{y(mean):.2f}" x2="{right}" y2="{y(mean):.2f}
 svg.append(f'<line x1="{x(dates[-1]):.2f}" y1="{y(ema):.2f}" x2="{x(ema_date):.2f}" y2="{y(ema):.2f}" stroke="#b62b34" stroke-width="2.5" stroke-dasharray="5 4"/>')
 for day, value, color in [(ema_date, ema, '#b62b34'), (mean_date, mean, '#076878')]:
     svg.append(f'<circle cx="{x(day):.2f}" cy="{y(value):.2f}" r="7" fill="#ffffff" stroke="{color}" stroke-width="3"/>')
-svg.extend([text(72, 546, f'EMA estimate  {ema_date.strftime("%b %d, %Y")}', 22, '#b62b34', 700), text(625, 546, f'Average estimate  {mean_date.strftime("%b %d, %Y")}', 22, '#076878', 700), text(72, 578, 'Dates are estimates, not announcements. Estimates can be in the past.', 16), '</g></svg>'])
+svg.extend([text(72, 546, f'EMA estimate  {ema_date.strftime("%b %d, %Y")}', 22, '#b62b34', 700), text(625, 546, f'Average estimate  {mean_date.strftime("%b %d, %Y")}', 22, '#076878', 700), text(72, 578, 'Compare release dates predicted from historical gaps.', 16), '</g></svg>'])
 assets = ROOT / 'assets'
 assets.mkdir(exist_ok=True)
 source = '\n'.join(svg)
@@ -79,7 +79,7 @@ base_url = 'https://nerdalytics.github.io/qwen-model-release-cadence-dashmodel/'
 image_url = base_url + 'assets/' + versioned_image
 for attribute, key in [('property', 'og:image'), ('property', 'og:image:secure_url'), ('name', 'twitter:image')]:
     html = re.sub(rf'(<meta {attribute}="{re.escape(key)}" content=")[^"]*("\s*/?>)', lambda match: match[1] + image_url + match[2], html)
-summary = f'{len(all_rows)} recorded Qwen releases and updates. Latest entry {all_rows[-1]['date']}. Compare ten forecast methods by model type. Estimates, not announcements.'
+summary = f'{len(all_rows)} recorded Qwen releases and updates. Latest entry {all_rows[-1]['date']}. Compare release timing with ten statistical methods.'
 for attribute, key in [('property', 'og:description'), ('name', 'twitter:description')]:
     html = re.sub(rf'(<meta {attribute}="{re.escape(key)}" content=")[^"]*("\s*/?>)', lambda match: match[1] + escape(summary, quote=True) + match[2], html)
 page.write_text(html)
