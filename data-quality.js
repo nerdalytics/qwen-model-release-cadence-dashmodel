@@ -1,5 +1,6 @@
 function checkedSource(source){if(!source||typeof source.url!=='string'||typeof source.title!=='string')return false;try{const url=new URL(source.url);return url.protocol==='https:'&&(['qwen.ai','qwenlm.github.io'].includes(url.hostname)||(url.hostname==='github.com'&&url.pathname.toLowerCase().startsWith('/qwenlm/')))}catch{return false}}
 function qualifiedDataset(payload){return !!(payload&&payload.demo===false&&payload.quality?.status==='primary-source-checked'&&Array.isArray(payload.releases)&&payload.releases.length&&payload.releases.every(r=>r.verification==='primary-source-checked'&&r.evidence&&Array.isArray(r.sourceIds)&&r.sourceIds.length&&r.sourceIds.every(id=>checkedSource(payload.sources?.[id]))))}
+function latestEntryDate(records){return records.reduce((latest,record)=>record.date>latest?record.date:latest,'')}
 function appendSourceDetails(record){
  const container=document.querySelector('#dialog-content');if(!container||!record)return;
  const section=document.createElement('section');section.className='source-details';
@@ -16,6 +17,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   if(typeof dataConfig==='undefined'||!dataConfig)return;
   const qualified=qualifiedDataset(dataConfig),badge=document.querySelector('.demo-badge'),label=dataConfig.demo===true?'Demo dataset':qualified?'Updated dataset':'Unverified dataset';
   if(badge.textContent.trim()!==label){badge.replaceChildren();const dot=document.createElement('i');badge.append(dot,document.createTextNode(' '+label))}
+  const status=document.querySelector('#data-status'),latest=latestEntryDate(data);
+  if(/^\d+ releases loaded/.test(status.textContent)&&latest){const text=`${data.length} releases loaded · ${dataConfig.demo===true?'Unverified demo data':qualified?'Source-checked release data':'Unverified release data'} · Updated ${latest}`;if(status.textContent!==text)status.textContent=text}
   const content=coverage.querySelector('.coverage-content');const stamp=`${dataConfig.updatedAt}|${dataConfig.releases.length}|${qualified}`;
   if(content.dataset.stamp===stamp)return;content.dataset.stamp=stamp;content.replaceChildren();
   const p=document.createElement('p');p.textContent=qualified?`${dataConfig.releases.length} curated events · Every event has dated first-party evidence · Checked ${dataConfig.quality.checkedAt}`:'This dataset has not passed the source-verification checks.';content.append(p);
