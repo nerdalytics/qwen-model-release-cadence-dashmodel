@@ -2,15 +2,15 @@
 const DAY=86400000,ALPHA=.2;
 const algorithms=[
  {id:'mean',name:'Historical mean',color:'#24e3df',min:1,description:'Mean of all distinct-date gaps. No trend assumption.'},
- {id:'ema',name:'EMA',color:'#edfa57',min:1,description:'α = 0.20. First gap seeds the calculation; older history can dominate short series.'},
+ {id:'ema',name:'EMA',color:'#edfa57',min:1,description:'α = 0.20. The first gap starts the calculation. Older gaps can dominate when few intervals are available.'},
  {id:'rolling-mean',name:'Recent mean',color:'#88b8ff',min:1,description:'Mean of the last three gaps, or all available gaps if fewer.'},
  {id:'rolling-median',name:'Recent median',color:'#ffcb92',min:1,description:'Median of the last three gaps. Less sensitive to one unusually long interval.'},
  {id:'weighted',name:'Weighted mean',color:'#e2a5ff',min:1,description:'Last three gaps weighted 20%, 30%, 50%, oldest to newest. Available weights are renormalized.'},
- {id:'holt',name:'Holt trend',color:'#ff9ac0',min:3,description:'Interval level and trend. α = 0.50, β = 0.30. Seed level is the first gap; seed trend is the second gap minus the first.'},
+ {id:'holt',name:'Holt trend',color:'#ff9ac0',min:3,description:'Interval level and trend. α = 0.50, β = 0.30. The starting level is the first gap. The starting trend is the second gap minus the first.'},
  {id:'damped-holt',name:'Damped Holt',color:'#a9dfa0',min:3,description:'Holt with damping φ = 0.80, including during level and trend updates. Projects a weaker continuation of the interval trend.'},
- {id:'regression',name:'Linear interval trend',color:'#ffd85b',min:3,description:'Ordinary least squares: interval length versus interval index, using all gaps. Predicts the next interval, not a line through calendar dates.'},
- {id:'renewal',name:'Lognormal renewal',color:'#81e2f4',min:3,description:'Lognormal waiting times fitted to log gaps. Point is the median; window is the model-based 10th–90th percentile.'},
- {id:'bayesian',name:'Bayesian partial pooling',color:'#d3d8ef',min:1,description:'Two-level Gamma–exponential model. Peer mean sets a Gamma rate prior with shape 2. Own gaps update that rate. Point is the predictive mean; window is the 10th–90th percentile. Empirical-Bayes prior, not a fully fitted hierarchy.'}
+ {id:'regression',name:'Linear interval trend',color:'#ffd85b',min:3,description:'Fits a straight line to gap length against gap number, using all gaps. Predicts the next interval, not a line through calendar dates.'},
+ {id:'renewal',name:'Lognormal renewal',color:'#81e2f4',min:3,description:'Fits a lognormal waiting-time distribution to the gaps. The point estimate is the median. The estimated window covers the 10th to 90th percentiles.'},
+ {id:'bayesian',name:'Bayesian partial pooling',color:'#d3d8ef',min:1,description:'Uses exponential waiting times with a Gamma rate prior. Related types set the prior mean gap and shape is 2. The model\'s own gaps update the rate. The point estimate is the predictive mean. The window covers the 10th to 90th percentiles. The prior is empirical Bayes, not a fully fitted hierarchy.'}
 ];
 function summarize(records,now=new Date()){
  const rows=[...records].sort((a,b)=>a.date.localeCompare(b.date)),dates=[...new Set(rows.map(r=>r.date))],gaps=dates.slice(1).map((d,i)=>(Date.parse(d)-Date.parse(dates[i]))/DAY);

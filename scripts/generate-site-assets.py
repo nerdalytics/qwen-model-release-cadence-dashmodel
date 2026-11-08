@@ -27,8 +27,8 @@ manifest = {
     'start_url': './',
     'scope': './',
     'display': 'standalone',
-    'background_color': '#090b13',
-    'theme_color': '#090b13',
+    'background_color': '#f6f6f3',
+    'theme_color': '#f6f6f3',
     'icons': [
         {'src': './icon-192.png', 'sizes': '192x192', 'type': 'image/png', 'purpose': 'any'},
         {'src': './icon-512.png', 'sizes': '512x512', 'type': 'image/png', 'purpose': 'any'},
@@ -50,7 +50,7 @@ structured = {
     'inLanguage': 'en',
     'about': {'@type': 'Thing', 'name': 'Qwen model release cadence'},
 }
-head = '''<meta name="color-scheme" content="dark">
+head = '''<meta name="color-scheme" content="light dark">
 <link rel="icon" type="image/x-icon" sizes="16x16 32x32 48x48" href="./favicon.ico">
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="48x48" href="./favicon-48x48.png">
@@ -60,7 +60,5 @@ head = '''<meta name="color-scheme" content="dark">
 <script type="application/ld+json">
 ''' + json.dumps(structured, ensure_ascii=False, indent=2) + '\n</script>\n'
 html = html.replace('</head>', head + '</head>', 1)
-html = re.sub(r'<p id="made-with"[^>]*>.*?</p>\s*', '', html, flags=re.S)
-html = html.replace('</footer>', '</footer>\n<p id="made-with" style="text-align:center;font-size:var(--utility);color:#c4cde0;margin:0;padding:0 0 2rem">Made with <span role="img" aria-label="love">❤️</span> and Qwen</p>', 1)
 page.write_text(html)
 print('Generated favicon, home-screen icons, manifest, and structured page metadata.')
