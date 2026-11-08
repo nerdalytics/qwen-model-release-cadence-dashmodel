@@ -1,16 +1,16 @@
 (function(root){
-const DAY=86400000,ALPHA=.2;
+const DAY=86400000,ALPHA=.2,MIN_SPACING=7;
 const algorithms=[
- {id:'mean',name:'Historical mean',color:'#24e3df',min:1,description:'Averages the gaps between all recorded release dates.'},
- {id:'ema',name:'EMA',color:'#edfa57',min:1,description:'α = 0.20. The first gap starts the calculation. Older gaps can dominate when few intervals are available.'},
- {id:'rolling-mean',name:'Recent mean',color:'#88b8ff',min:1,description:'Mean of the last three gaps, or all available gaps if fewer.'},
- {id:'rolling-median',name:'Recent median',color:'#ffcb92',min:1,description:'Median of the last three gaps. Less sensitive to one unusually long interval.'},
- {id:'weighted',name:'Weighted mean',color:'#e2a5ff',min:1,description:'Last three gaps weighted 20%, 30%, 50%, oldest to newest. Available weights are renormalized.'},
- {id:'holt',name:'Holt trend',color:'#ff9ac0',min:3,description:'Interval level and trend. α = 0.50, β = 0.30. The starting level is the first gap. The starting trend is the second gap minus the first.'},
- {id:'damped-holt',name:'Damped Holt',color:'#a9dfa0',min:3,description:'Holt with damping φ = 0.80, including during level and trend updates. Projects a weaker continuation of the interval trend.'},
- {id:'regression',name:'Linear interval trend',color:'#ffd85b',min:3,description:'Fits a straight line to gap length against gap number and extends it by one step.'},
- {id:'renewal',name:'Lognormal renewal',color:'#81e2f4',min:3,description:'Fits a lognormal waiting-time distribution to the gaps. The point estimate is the median. The estimated window covers the 10th to 90th percentiles.'},
- {id:'bayesian',name:'Bayesian partial pooling',color:'#d3d8ef',min:1,description:'Uses exponential waiting times with a Gamma rate prior. Related types set the prior mean gap and shape is 2. The model\'s own gaps update the rate. The point estimate is the predictive mean. The window covers the 10th to 90th percentiles. The prior is estimated from related types.'}
+ {id:'mean',name:'Historical mean',color:'#24e3df',min:1,description:'Averages every gap in the model type\'s history.'},
+ {id:'ema',name:'EMA',color:'#edfa57',min:1,description:'Exponential moving average, α = 0.20. The first gap starts the calculation. Each later gap contributes 20%, and the running value keeps 80%. With few gaps, the first gap can dominate.'},
+ {id:'rolling-mean',name:'Recent mean',color:'#88b8ff',min:1,description:'Mean of the last 3 gaps, or of all gaps if there are fewer.'},
+ {id:'rolling-median',name:'Recent median',color:'#ffcb92',min:1,description:'Median of the last 3 gaps. Less sensitive to 1 unusually long gap.'},
+ {id:'weighted',name:'Weighted mean',color:'#e2a5ff',min:1,description:'Last 3 gaps weighted 20%, 30% and 50%, oldest to newest. With fewer gaps, the available weights are rescaled to total 100%.'},
+ {id:'holt',name:'Holt trend',color:'#ff9ac0',min:3,description:'Tracks gap length (level) and its change per gap (trend). α = 0.50, β = 0.30. The starting level is the first gap. The starting trend is the second gap minus the first.'},
+ {id:'damped-holt',name:'Damped Holt',color:'#a9dfa0',min:3,description:'Holt trend with damping φ = 0.80, applied during level and trend updates. Projects a weaker continuation of the gap trend.'},
+ {id:'regression',name:'Linear gap trend',color:'#ffd85b',min:3,description:'Fits a straight line to gap length against gap number and extends it by 1 step.'},
+ {id:'renewal',name:'Lognormal renewal',color:'#81e2f4',min:3,description:'Fits a lognormal waiting-time distribution to the gaps. The forecast is the median. The 80% window covers the 10th to 90th percentile.'},
+ {id:'bayesian',name:'Bayesian partial pooling',color:'#d3d8ef',min:1,description:'Uses exponential waiting times with a Gamma rate prior. Gaps from related model types set the prior mean gap; the prior shape is 2. The model type\'s own gaps update the rate. The forecast is the predictive mean. The 80% window covers the 10th to 90th percentile. Related model types: API tiers (Max, Plus, Flash, Turbo) use each other, Coder types use other Coder types, and sizes use other sizes. Generation has no related model types.'}
 ];
 function summarize(records,now=new Date()){
  const rows=[...records].sort((a,b)=>a.date.localeCompare(b.date)),dates=[...new Set(rows.map(r=>r.date))],gaps=dates.slice(1).map((d,i)=>(Date.parse(d)-Date.parse(dates[i]))/DAY);
@@ -22,7 +22,10 @@ function summarize(records,now=new Date()){
  return {rows,dates,gaps,last,mean,ema,emaDate,meanDate,emaAge:age(emaDate),meanAge:age(meanDate),limited:gaps.length<3};
 }
 function addDays(date,days){if(!Number.isFinite(days)||days<=0)return null;const time=Date.parse(date)+Math.max(1,Math.round(days))*DAY;if(!Number.isFinite(time)||time>Date.parse('2100-12-31'))return null;return new Date(time).toISOString().slice(0,10)}
-function types(records){const priority=['Generation','Max','Plus','Flash','27B','Coder','Coder Next','Next','Turbo'];return [...new Set(records.flatMap(r=>r.modelTypes||[]))].sort((a,b)=>{const x=priority.indexOf(a),y=priority.indexOf(b);return (x<0?999:x)-(y<0?999:y)||a.localeCompare(b,undefined,{numeric:true})})}
+const TIERS=['Generation','Max','Plus','Flash','Turbo','Next','Coder','Coder Next'];
+function typeKey(type){const tier=TIERS.indexOf(type);if(tier>=0)return [0,tier,0,type];const coder=type.startsWith('Coder '),size=/^(\d+(?:\.\d+)?)([BT])\b/.exec(coder?type.slice(6):type);if(size)return [coder?2:1,0,Number(size[1])*(size[2]==='T'?1000:1),type];return [3,0,0,type]}
+function compareTypes(a,b){const x=typeKey(a),y=typeKey(b);return x[0]-y[0]||x[1]-y[1]||x[2]-y[2]||x[3].localeCompare(y[3])}
+function types(records){return [...new Set(records.flatMap(r=>r.modelTypes||[]))].sort(compareTypes)}
 function median(values){const a=[...values].sort((a,b)=>a-b),m=Math.floor(a.length/2);return a.length%2?a[m]:(a[m-1]+a[m])/2}
 function average(values){return values.reduce((a,b)=>a+b,0)/values.length}
 function holt(gaps,phi=1){let level=gaps[0],trend=gaps[1]-gaps[0];for(const gap of gaps.slice(1)){const previous=level;level=.5*gap+.5*(level+phi*trend);trend=.3*(level-previous)+.7*phi*trend}return {gap:level+phi*trend,level,trend}}
@@ -46,7 +49,8 @@ function peerPrior(records,type){
 }
 function rawForecast(summary,algorithm,options={}){
  const {gaps,last}=summary,n=gaps.length,id=algorithm.id;
- if(n<algorithm.min)return {reason:`Requires ${algorithm.min} ${algorithm.min===1?'gap':'gaps'}. This history has ${n}.`};
+ if(n<algorithm.min)return {reason:`Needs ${algorithm.min} ${algorithm.min===1?'gap':'gaps'}. This model type has ${n}.`};
+ if(gaps.every(g=>g<MIN_SPACING))return {reason:`Every gap is shorter than ${MIN_SPACING} days, too short to forecast from.`};
  let gap,low=null,high=null,note='',conditional=false;
  const recent=gaps.slice(-3);
  if(id==='mean')gap=summary.mean;
@@ -54,24 +58,24 @@ function rawForecast(summary,algorithm,options={}){
  if(id==='rolling-mean')gap=average(recent);
  if(id==='rolling-median')gap=median(recent);
  if(id==='weighted'){const weights=[.2,.3,.5].slice(-recent.length);gap=recent.reduce((sum,v,i)=>sum+v*weights[i],0)/weights.reduce((a,b)=>a+b,0)}
- if(id==='holt'||id==='damped-holt'){const result=holt(gaps,id==='holt'?1:.8);gap=result.gap;note=`Fitted gap level: ${result.level.toFixed(1)} days. Change per interval: ${result.trend.toFixed(1)} days.`}
- if(id==='regression'){const result=regression(gaps);gap=result.gap;note=`Change per interval: ${result.slope.toFixed(1)} days.`}
+ if(id==='holt'||id==='damped-holt'){const result=holt(gaps,id==='holt'?1:.8);gap=result.gap;note=`Fitted gap level: ${result.level.toFixed(1)} days. Change per gap: ${result.trend.toFixed(1)} days.`}
+ if(id==='regression'){const result=regression(gaps);gap=result.gap;note=`Change per gap: ${result.slope.toFixed(1)} days.`}
  const today=new Date(options.now||new Date()).toISOString().slice(0,10),elapsed=last?Math.max(0,(Date.parse(today)-Date.parse(last.date))/DAY):0;
  if(id==='renewal'){
   const logs=gaps.map(Math.log),mu=average(logs),sigma=Math.sqrt(average(logs.map(v=>(v-mu)**2)));
   let probability=0;
-  if(options.conditioned&&elapsed>0){if(sigma<1e-10){if(elapsed>=Math.exp(mu))return {reason:'Elapsed wait is outside the fitted constant-gap distribution.'}}else probability=normalCDF((Math.log(elapsed)-mu)/sigma);if(probability>1-1e-10)return {reason:'Elapsed wait is outside a numerically reliable fitted tail.'};conditional=true}
-  const quantile=p=>Math.exp(mu+sigma*normalQuantile(probability+(1-probability)*p));gap=quantile(.5);low=quantile(.1);high=quantile(.9);note=`Log-gap fit μ = ${mu.toFixed(3)}, σ = ${sigma.toFixed(3)}. Window excludes parameter uncertainty.`;
+  if(options.conditioned&&elapsed>0){if(sigma<1e-10){if(elapsed>=Math.exp(mu))return {reason:'The wait so far is longer than every gap in this constant-gap fit.'}}else probability=normalCDF((Math.log(elapsed)-mu)/sigma);if(probability>1-1e-10)return {reason:'The wait so far is too far into the fitted tail for a reliable forecast.'};conditional=true}
+  const quantile=p=>Math.exp(mu+sigma*normalQuantile(probability+(1-probability)*p));gap=quantile(.5);low=quantile(.1);high=quantile(.9);note=`Log-gap fit: μ = ${mu.toFixed(3)}, σ = ${sigma.toFixed(3)}. The window ignores uncertainty in μ and σ.`;
  }
  if(id==='bayesian'){
-  const prior=peerPrior(options.peers||[],options.type||'');if(!prior)return {reason:'Needs at least 3 non-overlapping intervals from related peer types.'};
+  const prior=peerPrior(options.peers||[],options.type||'');if(!prior)return {reason:options.type==='Generation'?'Generation has no related model types to borrow gaps from.':'Needs at least 3 gaps from related model types that do not overlap in time.'};
   const shape=2+n,rate=prior.mean+gaps.reduce((a,b)=>a+b,0)+(options.conditioned?elapsed:0),base=options.conditioned?elapsed:0;
   gap=base+rate/(shape-1);low=base+rate*(Math.pow(.9,-1/shape)-1);high=base+rate*(Math.pow(.1,-1/shape)-1);conditional=!!options.conditioned&&elapsed>0;
-  note=`Peers: ${prior.peers.join(', ')}; ${prior.count} distinct peer intervals. Prior shape 2, rate ${prior.mean.toFixed(1)}d. Posterior shape ${shape}, rate ${rate.toFixed(1)}d. Assumes a constant release rate.`;
+  note=`Related model types: ${prior.peers.join(', ')} (${prior.count} distinct gaps). Prior shape 2, rate ${prior.mean.toFixed(1)} days. Posterior shape ${shape}, rate ${rate.toFixed(1)} days. Assumes a constant release rate.`;
  }
- if(!Number.isFinite(gap)||gap<=0)return {reason:'The fitted trend predicts a gap of zero or fewer days, so a date cannot be calculated.',rawGap:gap};
+ if(!Number.isFinite(gap)||gap<=0)return {reason:'The fitted trend predicts a gap of 0 days or less, so no date can be calculated.',rawGap:gap};
  const date=addDays(last.date,gap),lowDate=low===null?null:addDays(last.date,low),highDate=high===null?null:addDays(last.date,high);
- if(!date||(high!==null&&!highDate))return {reason:'Estimated date is outside the supported range through 2100.'};
+ if(!date||(high!==null&&!highDate))return {reason:'The forecast date is after 2100, outside the supported range.'};
  return {gap,date,lowDate,highDate,note,conditional,age:(Date.parse(today)-Date.parse(date))/DAY,limited:n<(algorithm.min>=3?6:3),sample:n};
 }
 function backtest(records,algorithm,options={}){
@@ -84,5 +88,5 @@ function backtest(records,algorithm,options={}){
  return {mae:errors.length?average(errors):null,trials:errors.length,attempts,rejected:attempts-errors.length};
 }
 function forecasts(records,options={}){options={...options,peers:(options.peers||[]).filter(r=>r.date<=new Date(options.now||new Date()).toISOString().slice(0,10))};const s=summarize(records,options.now||new Date());return algorithms.map(algorithm=>({...algorithm,...rawForecast(s,algorithm,options),backtest:options.backtest===false?null:backtest(records,algorithm,options)}))}
-const api={summarize,types,algorithms,forecasts,peerPrior};if(typeof module==='object'&&module.exports)module.exports=api;else root.CadenceForecast=api;
+const api={summarize,types,compareTypes,algorithms,forecasts,peerPrior,MIN_SPACING};if(typeof module==='object'&&module.exports)module.exports=api;else root.CadenceForecast=api;
 })(typeof globalThis==='object'?globalThis:this);

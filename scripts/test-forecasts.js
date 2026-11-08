@@ -23,3 +23,12 @@ for(const name of ['Qwen3.5 medium-size expansion','Qwen3.5 small-size expansion
 assert.ok(!payload.releases.find(r=>r.name==='Qwen3.7-Plus').modelTypes.includes('Generation'));
 
 const flash=payload.releases.find(r=>r.name==='Qwen3.6-35B-A3B');assert.ok(flash.aliases.includes('Qwen3.6-Flash'));assert.ok(flash.modelTypes.includes('Flash'));assert.equal(flash.date,'2026-04-15');assert.equal(payload.releases.filter(r=>r.aliases?.includes('Qwen3.6-Flash')).length,1);const flashHistory=F.summarize(payload.releases.filter(r=>r.modelTypes.includes('Flash')),today);assert.equal(flashHistory.gaps[0],133);assert.equal(flashHistory.emaDate,'2027-01-06');
+
+// Classification follows the dataset rule: new models are releases, only changes to existing models are model updates.
+const byName=name=>payload.releases.find(r=>r.name===name);
+for(const name of ['Qwen-14B','Qwen2.5-Coder family expansion','Qwen2.5-1M','Qwen3.8-2.4T-A95B'])assert.equal(byName(name).event,'release',name);
+assert.equal(byName('Qwen-7B checkpoint update').event,'update');assert.equal(byName('Qwen-14B').date,byName('Qwen-7B checkpoint update').date);
+assert.equal(flash.apiModel,'qwen3.6-flash');assert.ok(flash.sourceIds.every(id=>payload.sources[id]));
+const typeOrder=F.types(payload.releases);assert.ok(typeOrder.indexOf('2B')<typeOrder.indexOf('2.4T-A95B'));assert.ok(typeOrder.indexOf('397B')<typeOrder.indexOf('2.4T-A95B'));assert.ok(typeOrder.indexOf('Coder 3B')<typeOrder.indexOf('Coder 14B'));
+for(const type of ['30B-A3B','235B-A22B'])for(const r of F.forecasts(payload.releases.filter(r=>r.modelTypes.includes(type)),{type,peers:payload.releases,now:today,backtest:false}))assert.ok(!r.date&&r.reason,type+'/'+r.id);
+console.log('Data tests passed: release/update classification, API name, size order and the 7-day minimum gap.');
