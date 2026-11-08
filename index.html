@@ -13,14 +13,14 @@
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Qwen Max release cadence chart with its own EMA, average release gap, and forecast estimates.">
+<meta property="og:image:alt" content="Qwen generation release cadence chart with its own EMA, average release gap, and forecast estimates.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Qwen release radar">
 <meta name="twitter:description" content="Qwen releases, updates, and release cadence forecasts. Estimates, not announcements.">
 <meta name="twitter:image" content="https://nerdalytics.github.io/qwen-model-release-cadence-dashmodel/assets/social-preview.png">
-<meta name="twitter:image:alt" content="Qwen Max release cadence chart with its own EMA, average release gap, and forecast estimates.">
+<meta name="twitter:image:alt" content="Qwen generation release cadence chart with its own EMA, average release gap, and forecast estimates.">
 <link rel="stylesheet" href="styles.css?v=7"><link rel="stylesheet" href="data-quality.css?v=7"><link rel="stylesheet" href="page-navigation.css?v=7">
-<link rel="stylesheet" href="chart-zoom.css?v=9"><link rel="stylesheet" href="forecast.css?v=12">
+<link rel="stylesheet" href="chart-zoom.css?v=13"><link rel="stylesheet" href="forecast.css?v=12">
 </head><body>
 <a class="skip-link" href="#main-content">Skip to dashboard</a>
 <header class="topbar"><a class="brand" href="#main-content" aria-label="Cadence dashboard"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3 22V10l8-5 8 5v12l-8 5zM13 22V10l8-5 8 5v12l-8 5z"></path></svg><span>cadence<span class="brand-dot">.</span></span></a><nav aria-label="Dashboard navigation"><a class="nav-link" id="log-nav" href="#release-log">Release log</a><a class="nav-link" id="method-nav" href="#methodology">Methodology</a></nav><div class="header-right"><span class="demo-badge"><i aria-hidden="true"></i> Loading dataset</span><button class="avatar" id="about" aria-label="About this dashboard" aria-haspopup="dialog">?</button></div></header>
@@ -34,7 +34,7 @@
 </section>
 <div id="data-banner" class="data-banner" role="status" aria-atomic="true"><span id="data-status">Loading release data…</span><button id="reload-data" class="button">Refresh data</button></div>
 <p id="results-status" class="sr-only" role="status" aria-atomic="true"></p>
-<section class="panel timeline-panel" aria-labelledby="timeline-title"><div class="panel-head"><div><h2 id="timeline-title">Release timeline <span class="pill">Loading…</span></h2><p>Core and coding models, including updates.</p></div><div class="chart-controls"><label class="updates-control"><input id="include-updates" type="checkbox" checked> Include updates</label><div class="segmented" role="group" aria-label="Model filter"><button class="active" data-filter="all" aria-pressed="true">All models</button><button data-filter="core" aria-pressed="false">Core</button><button data-filter="coding" aria-pressed="false">Coding</button></div><label class="period-control" for="model-type">Model type <select id="model-type"><option value="Max">Max</option></select></label><label class="period-control" for="period">Date range <select id="period"><option value="all">Full history</option></select></label></div></div>
+<section class="panel timeline-panel" aria-labelledby="timeline-title"><div class="panel-head"><div><h2 id="timeline-title">Release timeline <span class="pill">Loading…</span></h2><p>Core and coding models, including updates.</p></div><div class="chart-controls"><label class="updates-control"><input id="include-updates" type="checkbox" checked> Include updates</label><div class="segmented" role="group" aria-label="Model filter"><button class="active" data-filter="all" aria-pressed="true">All models</button><button data-filter="core" aria-pressed="false">Core</button><button data-filter="coding" aria-pressed="false">Coding</button></div><label class="period-control" for="model-type">Model type <select id="model-type"><option value="Generation">Generation</option></select></label><label class="period-control" for="period">Date range <select id="period"><option value="all">Full history</option></select></label></div></div>
 <div class="chart-summary"><span><i class="yellow-dot" aria-hidden="true"></i> Release gaps</span><span class="chart-hint">Select a release for details</span></div>
 <div class="chart-scroll" id="chart-scroll" tabindex="0" role="region" aria-label="Scrollable release timeline" aria-describedby="chart-help"><svg id="timeline" viewBox="0 0 1281 420" role="group" aria-labelledby="chart-svg-title" aria-describedby="chart-svg-desc"><title id="chart-svg-title">Release cadence chart</title><desc id="chart-svg-desc">Waiting for external release data.</desc></svg><div class="chart-input-surface" aria-hidden="true"></div></div>
 <div class="chart-navigation" role="group" aria-label="Timeline controls">
@@ -46,8 +46,8 @@
 <div class="pan-control"><div class="control-heading"><label for="chart-pan">Timeline</label><span id="pan-range">All dates</span></div><input type="range" id="chart-pan" min="0" max="100" step="0.1" value="0" aria-label="Timeline position" aria-controls="timeline" aria-describedby="pan-help" disabled><span id="pan-help" class="sr-only">Zoom in to move through the timeline.</span></div>
 <span id="zoom-status" class="sr-only" role="status" aria-live="polite"></span>
 </div>
-<p id="chart-help" class="chart-help">Scroll or pinch to zoom. Drag to move through dates. Select a point for release details.</p>
-<p class="sr-only">Focus the chart and press + or − to zoom, or 0 to reset. Use arrow keys to move through dates. Focus a release point and use arrow keys to browse releases, then Enter for details.</p>
+<p id="chart-help" class="chart-help">Scroll or pinch to zoom. Drag to move through dates. Select a release or forecast point for details. Shared points cycle through methods when clicked again.</p>
+<p class="sr-only">Focus the chart and press + or − to zoom, or 0 to reset. Use arrow keys to move through dates. Focus a release or forecast point and use arrow keys to browse points, then Enter for details. Escape hides its tooltip.</p>
 <div class="timeline-bottom"><div class="legend" aria-label="Chart legend"><span><i class="legend-line" aria-hidden="true"></i> EMA</span><span><i class="legend-line cyan" aria-hidden="true"></i> Average gap</span><span><i class="legend-dash" aria-hidden="true"></i> Selected forecasts</span></div><p class="timeline-note" id="scroll-note">Waiting for data</p></div><div class="forecast-legend" id="forecast-legend" aria-label="Selected forecast dates"></div>
 </section>
 <section class="panel forecast-panel" aria-labelledby="algorithm-model"><div class="panel-head"><div><h2 id="algorithm-model">Algorithm comparison</h2><p>Compare methods for the selected model type. Uncheck methods to hide their cards, graph markers and table rows.</p></div></div>
@@ -63,5 +63,5 @@
 </main>
 <button class="back-to-top" id="overview-nav" aria-label="Back to top" title="Back to top" hidden><span aria-hidden="true">↑</span></button>
 <dialog id="details" aria-labelledby="dialog-title"><div class="dialog-top"><span class="eyebrow" id="dialog-eyebrow">RELEASE DETAILS</span><button id="close-dialog" aria-label="Close dialog">×</button></div><div id="dialog-content"></div></dialog><div class="toast" id="toast" role="status" aria-atomic="true"></div>
-<script src="forecast.js?v=12" defer></script><script src="app.js?v=12" defer></script><script src="forecast-comparison.js?v=12" defer></script><script src="chart-zoom.js?v=10" defer></script><script src="data-quality.js?v=9" defer></script><script src="page-navigation.js?v=8" defer></script>
+<script src="forecast.js?v=12" defer></script><script src="app.js?v=13" defer></script><script src="forecast-comparison.js?v=13" defer></script><script src="chart-zoom.js?v=13" defer></script><script src="data-quality.js?v=9" defer></script><script src="page-navigation.js?v=8" defer></script>
 </body></html>
