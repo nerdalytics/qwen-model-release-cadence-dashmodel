@@ -60,7 +60,7 @@ svg.append(f'<line x1="{left}" y1="{y(mean):.2f}" x2="{right}" y2="{y(mean):.2f}
 svg.append(f'<line x1="{x(dates[-1]):.2f}" y1="{y(ema):.2f}" x2="{x(ema_date):.2f}" y2="{y(ema):.2f}" stroke="#edfa57" stroke-width="2.5" stroke-dasharray="5 4"/>')
 for day, value, color in [(ema_date, ema, '#edfa57'), (mean_date, mean, '#24e3df')]:
     svg.append(f'<circle cx="{x(day):.2f}" cy="{y(value):.2f}" r="7" fill="#10131e" stroke="{color}" stroke-width="3"/>')
-svg.extend([text(72, 546, f'EMA estimate  {ema_date.strftime("%b %d, %Y")}', 22, '#edfa57', 700), text(625, 546, f'Average estimate  {mean_date.strftime("%b %d, %Y")}', 22, '#24e3df', 700), text(72, 578, 'Historical interval estimates, not announced releases. Dates may already be past.', 16), '</g></svg>'])
+svg.extend([text(72, 546, f'EMA estimate  {ema_date.strftime("%b %d, %Y")}', 22, '#edfa57', 700), text(625, 546, f'Average estimate  {mean_date.strftime("%b %d, %Y")}', 22, '#24e3df', 700), text(72, 578, 'Dates are estimates, not announcements. Estimates can be in the past.', 16), '</g></svg>'])
 assets = ROOT / 'assets'
 assets.mkdir(exist_ok=True)
 source = '\n'.join(svg)
@@ -76,7 +76,7 @@ base_url = 'https://nerdalytics.github.io/qwen-model-release-cadence-dashmodel/'
 image_url = base_url + 'assets/' + versioned_image
 for attribute, key in [('property', 'og:image'), ('property', 'og:image:secure_url'), ('name', 'twitter:image')]:
     html = re.sub(rf'(<meta {attribute}="{re.escape(key)}" content=")[^"]*("\s*/?>)', lambda match: match[1] + image_url + match[2], html)
-summary = f'{len(rows)} Qwen release and update events. Latest entry {dates[-1]}. EMA and average forecasts are interval estimates, not announcements.'
+summary = f'{len(rows)} recorded Qwen releases and updates. Latest entry {dates[-1]}. Forecasts estimate timing, not confirmed releases.'
 for attribute, key in [('property', 'og:description'), ('name', 'twitter:description')]:
     html = re.sub(rf'(<meta {attribute}="{re.escape(key)}" content=")[^"]*("\s*/?>)', lambda match: match[1] + escape(summary, quote=True) + match[2], html)
 page.write_text(html)
