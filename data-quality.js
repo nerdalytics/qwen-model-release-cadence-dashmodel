@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   const content=coverage.querySelector('.coverage-content');const stamp=`${dataConfig.updatedAt}|${dataConfig.releases.length}|${qualified}`;
   if(content.dataset.stamp===stamp)return;content.dataset.stamp=stamp;content.replaceChildren();
   const p=document.createElement('p');p.textContent=qualified?`${dataConfig.releases.length} recorded events · Each event has a dated official source · Checked ${dataConfig.quality.checkedAt}`:'Some records lack a checked official source.';content.append(p);
-  for(const key of ['coverage','datePolicy','grouping','automation'])if(dataConfig.quality?.[key]){const p=document.createElement('p');p.textContent=dataConfig.quality[key];content.append(p)}
+  for(const key of ['coverage','datePolicy','grouping','forecastGrouping','automation'])if(dataConfig.quality?.[key]){const p=document.createElement('p');p.textContent=dataConfig.quality[key];content.append(p)}
   const a=document.createElement('a');a.href='https://github.com/nerdalytics/qwen-model-release-cadence-dashmodel/blob/main/SOURCE_AUDIT.md';a.target='_blank';a.rel='noopener noreferrer';a.textContent='Read the source audit ↗';a.setAttribute('aria-label','Read the source audit, opens in a new tab');content.append(a);
  }
  new MutationObserver(refreshQuality).observe(document.querySelector('#data-status'),{childList:true,characterData:true,subtree:true});

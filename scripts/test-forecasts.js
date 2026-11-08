@@ -1,0 +1,18 @@
+const assert=require('node:assert/strict');
+const F=require('../forecast.js'),payload=require('../data/releases.json'),today=new Date('2026-11-09T12:00:00Z');
+const fixtures={Max:['2025-01-28','2025-09-24','2026-01-26','2026-05-20','2026-08-03'],'27B':['2026-02-24','2026-04-22','2026-08-14'],Plus:['2026-04-02','2026-06-01'],Flash:['2026-08-26']};
+const summary=type=>F.summarize(fixtures[type].map(date=>({date})),today);
+for(const row of payload.releases){assert.ok(row.modelTypes.length,row.name);assert.equal(new Set(row.modelTypes).size,row.modelTypes.length)}
+assert.equal(summary('Max').emaDate,'2027-01-21');assert.equal(summary('Max').meanDate,'2026-12-19');
+assert.equal(summary('27B').emaDate,'2026-10-21');assert.equal(summary('27B').meanDate,'2026-11-08');assert.equal(summary('27B').meanAge,1);
+assert.equal(summary('Plus').limited,true);assert.equal(summary('Plus').emaDate,'2026-07-31');
+assert.equal(summary('Flash').emaDate,null);assert.equal(summary('Flash').gaps.length,0);
+const rows=[{date:'2026-01-01'},{date:'2026-01-11'},{date:'2026-01-31'}];
+assert.equal(F.summarize(rows,today).ema,12);assert.equal(F.summarize(rows,today).mean,15);
+assert.equal(F.summarize([...rows,rows[1]],today).ema,F.summarize(rows,today).ema);assert.equal(F.summarize([...rows,rows[1]],today).mean,F.summarize(rows,today).mean);
+assert.equal(F.summarize(rows,new Date('2027-01-01')).emaDate,F.summarize(rows,today).emaDate);
+assert.equal(F.summarize([],today).emaDate,null);assert.equal(F.summarize([{date:'2026-01-01'}],today).meanDate,null);
+assert.ok(payload.releases.some(r=>r.modelTypes.includes('Max')));assert.ok(payload.releases.some(r=>r.modelTypes.includes('27B')));
+assert.ok(!payload.releases.find(r=>r.name==='Qwen2.5-Coder').modelTypes.includes('Coder 32B'));
+assert.ok(!payload.releases.filter(r=>r.series==='coding').some(r=>r.modelTypes.includes('7B')));
+console.log('Forecast tests passed: isolated types, EMA, mean, missing history, same-day deduplication and stable past dates.');

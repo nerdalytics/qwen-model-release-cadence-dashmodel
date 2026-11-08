@@ -28,7 +28,7 @@
  function endTouch(event){if(pinch&&event.touches.length<2){pinch=null;chartZoom.suppressClickUntil=performance.now()+600;drag=null;announce()}else if(!event.touches.length)endDrag()}
  viewport.addEventListener('touchend',endTouch);viewport.addEventListener('touchcancel',endTouch);
  viewport.addEventListener('keydown',event=>{if(event.target!==viewport)return;if(event.key==='+'||event.key==='='){event.preventDefault();zoomTo(chartZoom.level+10);announce()}else if(event.key==='-'){event.preventDefault();zoomTo(chartZoom.level-10);announce()}else if(event.key==='0'){event.preventDefault();zoomTo(0);announce()}else if(['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();const max=1-1/(1+chartZoom.level*.07);chartZoom.offset=event.key==='Home'?0:event.key==='End'?max:clamp(chartZoom.offset+(event.key==='ArrowRight'?1:-1)*.1/(1+chartZoom.level*.07),0,max);schedule();sync()}});
- for(const control of document.querySelectorAll('[data-filter],#period,#include-updates'))control.addEventListener('change',reset);
+ for(const control of document.querySelectorAll('[data-filter],#period,#include-updates,#model-type'))control.addEventListener('change',reset);
  for(const control of document.querySelectorAll('[data-filter]'))control.addEventListener('click',reset);
  function reset(){chartZoom.level=0;chartZoom.offset=0;lastPointerX=null;schedule();sync()}
  sync();

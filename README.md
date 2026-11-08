@@ -25,3 +25,5 @@ The history covers selected core and coding milestones, not every Qwen model. So
 "Updated" is the date of the latest recorded event. "Checked" is the source-review date.
 
 See the [source audit](SOURCE_AUDIT.md) for corrections and coverage limits.
+
+Forecasts are separate for each model type. Select Max, Plus, Flash or a parameter size to see its history. Past estimates stay marked as past; types with little data show a limited-history warning. The date-range filter changes the graph, not the forecast.

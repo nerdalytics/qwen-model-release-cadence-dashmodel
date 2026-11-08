@@ -11,7 +11,9 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 payload = json.loads((ROOT / 'data/releases.json').read_text())
-rows = sorted(payload['releases'], key=lambda row: row['date'])
+all_rows = sorted(payload['releases'], key=lambda row: row['date'])
+rows = [row for row in all_rows if 'Max' in row.get('modelTypes', [])]
+rows = list({row['date']: row for row in rows}.values())
 dates = [date.fromisoformat(row['date']) for row in rows]
 gaps = [(current - previous).days for previous, current in zip(dates, dates[1:])]
 if not gaps:
@@ -42,7 +44,7 @@ def text(px, py, content, size=18, color='#b8c2d6', weight=400, anchor='start'):
     return f'<text x="{px:.2f}" y="{py:.2f}" font-size="{size}" fill="{color}" font-weight="{weight}" text-anchor="{anchor}">{escape(str(content))}</text>'
 
 
-svg = ['<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">', '<title id="title">Qwen release cadence and forecast estimates</title>', f'<desc id="desc">{len(rows)} events since {dates[0].year}. Latest event {dates[-1]}. EMA {ema:.1f} days estimates {ema_date}. Average {mean:.1f} days estimates {mean_date}. Estimates are not announcements.</desc>', '<rect width="1200" height="630" fill="#090b13"/>', '<g font-family="DejaVu Sans, sans-serif">', '<rect x="36" y="36" width="1128" height="558" rx="18" fill="#10131e" stroke="#394154"/>', text(72, 83, 'cadence.', 24, '#edfa57', 700), text(1128, 83, 'nerdalytics / QWEN', 16, anchor='end'), text(72, 143, 'Qwen release radar.', 46, '#eef0f7', 700), text(72, 177, f'{len(rows)} release & update events  ·  Latest entry {dates[-1]}', 20), '<line x1="72" y1="205" x2="1128" y2="205" stroke="#394154"/>', text(72, 235, f'EMA  {ema:.1f} days', 22, '#edfa57', 700), text(416, 235, f'Average  {mean:.1f} days', 22, '#24e3df', 700), text(1128, 234, 'FULL HISTORY · UPDATES INCLUDED', 14, anchor='end')]
+svg = ['<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">', '<title id="title">Qwen Max release cadence and forecast estimates</title>', f'<desc id="desc">{len(rows)} events since {dates[0].year}. Latest event {dates[-1]}. EMA {ema:.1f} days estimates {ema_date}. Average {mean:.1f} days estimates {mean_date}. Estimates are not announcements.</desc>', '<rect width="1200" height="630" fill="#090b13"/>', '<g font-family="DejaVu Sans, sans-serif">', '<rect x="36" y="36" width="1128" height="558" rx="18" fill="#10131e" stroke="#394154"/>', text(72, 83, 'cadence.', 24, '#edfa57', 700), text(1128, 83, 'nerdalytics / QWEN', 16, anchor='end'), text(72, 143, 'Qwen release radar.', 46, '#eef0f7', 700), text(72, 177, f'Max model history  ·  Latest Max entry {dates[-1]}', 20), '<line x1="72" y1="205" x2="1128" y2="205" stroke="#394154"/>', text(72, 235, f'EMA  {ema:.1f} days', 22, '#edfa57', 700), text(416, 235, f'Average  {mean:.1f} days', 22, '#24e3df', 700), text(1128, 234, 'MAX · UPDATES INCLUDED', 14, anchor='end')]
 for tick in range(0, maximum + 1, 20):
     py = y(tick)
     svg.append(f'<line x1="{left}" y1="{py:.2f}" x2="{right}" y2="{py:.2f}" stroke="#394154" stroke-dasharray="3 5"/>')
@@ -76,7 +78,7 @@ base_url = 'https://nerdalytics.github.io/qwen-model-release-cadence-dashmodel/'
 image_url = base_url + 'assets/' + versioned_image
 for attribute, key in [('property', 'og:image'), ('property', 'og:image:secure_url'), ('name', 'twitter:image')]:
     html = re.sub(rf'(<meta {attribute}="{re.escape(key)}" content=")[^"]*("\s*/?>)', lambda match: match[1] + image_url + match[2], html)
-summary = f'{len(rows)} recorded Qwen releases and updates. Latest entry {dates[-1]}. Forecasts estimate timing, not confirmed releases.'
+summary = f'{len(all_rows)} recorded Qwen releases and updates. Latest entry {all_rows[-1]['date']}. Separate forecasts by model type, not confirmed releases.'
 for attribute, key in [('property', 'og:description'), ('name', 'twitter:description')]:
     html = re.sub(rf'(<meta {attribute}="{re.escape(key)}" content=")[^"]*("\s*/?>)', lambda match: match[1] + escape(summary, quote=True) + match[2], html)
 page.write_text(html)
