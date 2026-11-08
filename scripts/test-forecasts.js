@@ -16,3 +16,8 @@ assert.ok(payload.releases.some(r=>r.modelTypes.includes('Max')));assert.ok(payl
 assert.ok(!payload.releases.find(r=>r.name==='Qwen2.5-Coder').modelTypes.includes('Coder 32B'));
 assert.ok(!payload.releases.filter(r=>r.series==='coding').some(r=>r.modelTypes.includes('7B')));
 console.log('Forecast tests passed: isolated types, EMA, mean, missing history, same-day deduplication and stable past dates.');
+
+for(const name of ['Qwen3.5','Qwen3.6-Plus','Qwen3.7-Max','Qwen3.8-Max']){const row=payload.releases.find(r=>r.name===name);assert.equal(row.event,'release');assert.equal(row.series,'core');assert.ok(row.modelTypes.includes('Generation'))}
+for(const generation of ['3.5','3.6','3.7','3.8'])assert.equal(payload.releases.filter(r=>r.generation===generation&&r.modelTypes.includes('Generation')).length,1);
+for(const name of ['Qwen3.5 medium-size expansion','Qwen3.5 small-size expansion','Qwen3.6-35B-A3B','Qwen3.6-27B','Qwen3.7-Plus'])assert.equal(payload.releases.find(r=>r.name===name).event,'release');
+assert.ok(!payload.releases.find(r=>r.name==='Qwen3.7-Plus').modelTypes.includes('Generation'));
