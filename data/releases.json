@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "demo": true,
+  "updatedAt": "2026-11-08",
+  "releases": [
+    { "name": "Qwen-7B", "date": "2023-08-03", "series": "core" },
+    { "name": "Qwen1.5", "date": "2024-02-05", "series": "core" },
+    { "name": "CodeQwen1.5", "date": "2024-04-02", "series": "coding" },
+    { "name": "Qwen2", "date": "2024-06-06", "series": "core" },
+    { "name": "Qwen2.5", "date": "2024-09-19", "series": "core" },
+    { "name": "Qwen2.5-Coder", "date": "2024-11-12", "series": "coding" },
+    { "name": "Qwen3", "date": "2025-04-29", "series": "core" },
+    { "name": "Qwen3-Coder", "date": "2025-07-22", "series": "coding" },
+    { "name": "Qwen3-Next", "date": "2025-09-11", "series": "core" },
+    { "name": "Qwen3-Coder-Next", "date": "2026-02-02", "series": "coding" },
+    { "name": "Qwen3.5", "date": "2026-02-16", "series": "core" },
+    { "name": "Qwen3.6", "date": "2026-04-16", "series": "core" },
+    { "name": "Qwen3.7", "date": "2026-05-20", "series": "core" },
+    { "name": "Qwen3.8", "date": "2026-08-03", "series": "core" },
+    { "name": "Qwen3.8-Flash", "date": "2026-08-24", "series": "variant" },
+    { "name": "Qwen3.8-Flash-Next", "date": "2026-10-03", "series": "variant" }
+  ]
+}
