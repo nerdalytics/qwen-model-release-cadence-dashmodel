@@ -1,0 +1,20 @@
+
+.timeline-panel>.panel-head{display:grid;grid-template-columns:minmax(0,1fr);align-items:start;gap:1rem}
+.timeline-panel>.panel-head>div:first-child{min-block-size:5.25rem}
+.timeline-panel>.panel-head p{margin-block:.35rem 0;min-block-size:2lh;max-inline-size:none}
+.chart-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,17rem),1fr));gap:1rem;align-items:end;inline-size:100%}
+.chart-controls>*{min-inline-size:0;inline-size:100%}
+.chart-controls .segmented{display:grid;grid-template-columns:1.4fr 1fr 1fr;min-block-size:44px}
+.period-control{display:grid;grid-template-columns:minmax(0,1fr);gap:.35rem;align-items:start}
+.period-control select{inline-size:100%;min-inline-size:0;max-inline-size:100%;block-size:2.75rem}
+.updates-control{min-block-size:44px}
+.chart-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:1rem;align-items:start;min-block-size:5rem}
+.chart-summary>span{min-block-size:2lh}
+.metric-label{display:block;min-block-size:3lh}.metric-label .small-chip{display:inline-block}.metric-value{min-block-size:4.5rem;font-variant-numeric:tabular-nums}.metric-foot{min-block-size:3lh}
+.timeline-panel .pill{display:inline-block;min-inline-size:11ch;text-align:center;font-variant-numeric:tabular-nums}
+.algorithm-panel-title,#algorithm-model{min-block-size:2lh}.selection-status{min-block-size:2lh}
+.methodology-copy{display:block;columns:25rem;column-gap:1.5rem;margin-block-start:1.25rem}
+.methodology-copy>div{break-inside:avoid;display:flow-root;padding:1rem 1.25rem;margin-block:0 1.5rem;border:1px solid var(--border);border-radius:.5rem;background:#121722}
+.methodology-copy p{max-inline-size:none;margin-block:.5rem 0;text-wrap:pretty}
+.methodology-copy h3{text-wrap:balance}
+@supports (display:grid-lanes){.methodology-copy{display:grid-lanes;columns:auto;grid-template-columns:repeat(auto-fit,minmax(min(100%,25rem),1fr));gap:1.5rem}.methodology-copy>div{margin:0}}
