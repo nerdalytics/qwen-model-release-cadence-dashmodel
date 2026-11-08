@@ -1,16 +1,16 @@
 (function(root){
 const DAY=86400000,ALPHA=.2,MIN_SPACING=7;
 const algorithms=[
- {id:'mean',name:'Historical mean',color:'#24e3df',min:1,description:'Averages every gap in the model type\'s history.'},
- {id:'ema',name:'EMA',color:'#edfa57',min:1,description:'Exponential moving average, α = 0.20. The first gap starts the calculation. Each later gap contributes 20%, and the running value keeps 80%. With few gaps, the first gap can dominate.'},
- {id:'rolling-mean',name:'Recent mean',color:'#88b8ff',min:1,description:'Mean of the last 3 gaps, or of all gaps if there are fewer.'},
- {id:'rolling-median',name:'Recent median',color:'#ffcb92',min:1,description:'Median of the last 3 gaps. Less sensitive to 1 unusually long gap.'},
- {id:'weighted',name:'Weighted mean',color:'#e2a5ff',min:1,description:'Last 3 gaps weighted 20%, 30% and 50%, oldest to newest. With fewer gaps, the available weights are rescaled to total 100%.'},
- {id:'holt',name:'Holt trend',color:'#ff9ac0',min:3,description:'Tracks gap length (level) and its change per gap (trend). α = 0.50, β = 0.30. The starting level is the first gap. The starting trend is the second gap minus the first.'},
+ {id:'mean',name:'Historical mean',color:'#24e3df',min:1,description:'Averages every gap in the history of the model type.'},
+ {id:'ema',name:'EMA',color:'#edfa57',min:1,description:'EMA is an exponential moving average with α = 0.20. The first gap starts the calculation. Each later gap contributes 20%, and the running value keeps 80%. With few gaps, the first gap can dominate.'},
+ {id:'rolling-mean',name:'Recent mean',color:'#88b8ff',min:1,description:'Takes the mean of the last 3 gaps, or of all gaps if there are fewer.'},
+ {id:'rolling-median',name:'Recent median',color:'#ffcb92',min:1,description:'Takes the median of the last 3 gaps. A single unusually long gap moves it less than it moves the mean.'},
+ {id:'weighted',name:'Weighted mean',color:'#e2a5ff',min:1,description:'Weights the last 3 gaps 20%, 30% and 50%, oldest to newest. With fewer gaps, the available weights are rescaled to total 100%.'},
+ {id:'holt',name:'Holt trend',color:'#ff9ac0',min:3,description:'Tracks the gap length, called the level, and its change per gap, called the trend. α = 0.50, β = 0.30. The starting level is the first gap. The starting trend is the second gap minus the first.'},
  {id:'damped-holt',name:'Damped Holt',color:'#a9dfa0',min:3,description:'Holt trend with damping φ = 0.80, applied during level and trend updates. Projects a weaker continuation of the gap trend.'},
  {id:'regression',name:'Linear gap trend',color:'#ffd85b',min:3,description:'Fits a straight line to gap length against gap number and extends it by 1 step.'},
  {id:'renewal',name:'Lognormal renewal',color:'#81e2f4',min:3,description:'Fits a lognormal waiting-time distribution to the gaps. The forecast is the median. The 80% window covers the 10th to 90th percentile.'},
- {id:'bayesian',name:'Bayesian partial pooling',color:'#d3d8ef',min:1,description:'Uses exponential waiting times with a Gamma rate prior. Gaps from related model types set the prior mean gap; the prior shape is 2. The model type\'s own gaps update the rate. The forecast is the predictive mean. The 80% window covers the 10th to 90th percentile. Related model types: API tiers (Max, Plus, Flash, Turbo) use each other, Coder types use other Coder types, and sizes use other sizes. Generation has no related model types.'}
+ {id:'bayesian',name:'Bayesian partial pooling',color:'#d3d8ef',min:1,description:'Uses exponential waiting times with a Gamma rate prior. Gaps from related model types set the prior mean gap; the prior shape is 2. The model type\'s own gaps update the rate. The forecast is the predictive mean. The 80% window covers the 10th to 90th percentile. The API tiers Max, Plus, Flash and Turbo borrow from each other, Coder types borrow from other Coder types, and sizes borrow from other sizes. Generation has no related model types.'}
 ];
 function summarize(records,now=new Date()){
  const rows=[...records].sort((a,b)=>a.date.localeCompare(b.date)),dates=[...new Set(rows.map(r=>r.date))],gaps=dates.slice(1).map((d,i)=>(Date.parse(d)-Date.parse(dates[i]))/DAY);
@@ -50,7 +50,7 @@ function peerPrior(records,type){
 function rawForecast(summary,algorithm,options={}){
  const {gaps,last}=summary,n=gaps.length,id=algorithm.id;
  if(n<algorithm.min)return {reason:`Needs ${algorithm.min} ${algorithm.min===1?'gap':'gaps'}. This model type has ${n}.`};
- if(gaps.every(g=>g<MIN_SPACING))return {reason:`Every gap is shorter than ${MIN_SPACING} days, too short to forecast from.`};
+ if(gaps.every(g=>g<MIN_SPACING))return {reason:`Every gap is shorter than ${MIN_SPACING} days, so this method does not forecast from them.`};
  let gap,low=null,high=null,note='',conditional=false;
  const recent=gaps.slice(-3);
  if(id==='mean')gap=summary.mean;
@@ -58,20 +58,20 @@ function rawForecast(summary,algorithm,options={}){
  if(id==='rolling-mean')gap=average(recent);
  if(id==='rolling-median')gap=median(recent);
  if(id==='weighted'){const weights=[.2,.3,.5].slice(-recent.length);gap=recent.reduce((sum,v,i)=>sum+v*weights[i],0)/weights.reduce((a,b)=>a+b,0)}
- if(id==='holt'||id==='damped-holt'){const result=holt(gaps,id==='holt'?1:.8);gap=result.gap;note=`Fitted gap level: ${result.level.toFixed(1)} days. Change per gap: ${result.trend.toFixed(1)} days.`}
- if(id==='regression'){const result=regression(gaps);gap=result.gap;note=`Change per gap: ${result.slope.toFixed(1)} days.`}
+ if(id==='holt'||id==='damped-holt'){const result=holt(gaps,id==='holt'?1:.8);gap=result.gap;note=`The fitted gap level is ${result.level.toFixed(1)} days, changing by ${result.trend.toFixed(1)} days per gap.`}
+ if(id==='regression'){const result=regression(gaps);gap=result.gap;note=`The fitted line changes by ${result.slope.toFixed(1)} days per gap.`}
  const today=new Date(options.now||new Date()).toISOString().slice(0,10),elapsed=last?Math.max(0,(Date.parse(today)-Date.parse(last.date))/DAY):0;
  if(id==='renewal'){
   const logs=gaps.map(Math.log),mu=average(logs),sigma=Math.sqrt(average(logs.map(v=>(v-mu)**2)));
   let probability=0;
   if(options.conditioned&&elapsed>0){if(sigma<1e-10){if(elapsed>=Math.exp(mu))return {reason:'The wait so far is longer than every gap in this constant-gap fit.'}}else probability=normalCDF((Math.log(elapsed)-mu)/sigma);if(probability>1-1e-10)return {reason:'The wait so far is too far into the fitted tail for a reliable forecast.'};conditional=true}
-  const quantile=p=>Math.exp(mu+sigma*normalQuantile(probability+(1-probability)*p));gap=quantile(.5);low=quantile(.1);high=quantile(.9);note=`Log-gap fit: μ = ${mu.toFixed(3)}, σ = ${sigma.toFixed(3)}. The window ignores uncertainty in μ and σ.`;
+  const quantile=p=>Math.exp(mu+sigma*normalQuantile(probability+(1-probability)*p));gap=quantile(.5);low=quantile(.1);high=quantile(.9);note=`The log-gap fit has μ = ${mu.toFixed(3)} and σ = ${sigma.toFixed(3)}. The window ignores uncertainty in μ and σ.`;
  }
  if(id==='bayesian'){
   const prior=peerPrior(options.peers||[],options.type||'');if(!prior)return {reason:options.type==='Generation'?'Generation has no related model types to borrow gaps from.':'Needs at least 3 gaps from related model types that do not overlap in time.'};
   const shape=2+n,rate=prior.mean+gaps.reduce((a,b)=>a+b,0)+(options.conditioned?elapsed:0),base=options.conditioned?elapsed:0;
   gap=base+rate/(shape-1);low=base+rate*(Math.pow(.9,-1/shape)-1);high=base+rate*(Math.pow(.1,-1/shape)-1);conditional=!!options.conditioned&&elapsed>0;
-  note=`Related model types: ${prior.peers.join(', ')} (${prior.count} distinct gaps). Prior shape 2, rate ${prior.mean.toFixed(1)} days. Posterior shape ${shape}, rate ${rate.toFixed(1)} days. Assumes a constant release rate.`;
+  note=`The prior uses ${prior.count} distinct gaps from ${prior.peers.length===1?prior.peers[0]:prior.peers.slice(0,-1).join(', ')+' and '+prior.peers.at(-1)}. The prior has shape 2 and rate ${prior.mean.toFixed(1)} days. The posterior has shape ${shape} and rate ${rate.toFixed(1)} days. The model assumes a constant release rate.`;
  }
  if(!Number.isFinite(gap)||gap<=0)return {reason:'The fitted trend predicts a gap of 0 days or less, so no date can be calculated.',rawGap:gap};
  const date=addDays(last.date,gap),lowDate=low===null?null:addDays(last.date,low),highDate=high===null?null:addDays(last.date,high);
