@@ -84,7 +84,7 @@ base_url = 'https://nerdalytics.github.io/qwen-model-release-cadence-dashmodel/'
 image_url = base_url + 'assets/' + versioned_image
 for attribute, key in [('property', 'og:image'), ('property', 'og:image:secure_url'), ('name', 'twitter:image')]:
     html = re.sub(rf'(<meta {attribute}="{re.escape(key)}" content=")[^"]*("\s*/?>)', lambda match: match[1] + image_url + match[2], html)
-summary = f'{len(all_rows)} entries: Qwen releases and model updates. Latest entry {long_date(date.fromisoformat(all_rows[-1]["date"]))}. Compare release timing with 10 statistical methods.'
+summary = f'{len(all_rows)} Qwen releases and model updates, the latest on {long_date(date.fromisoformat(all_rows[-1]["date"]))}. Compare release timing with 10 statistical methods.'
 for attribute, key in [('property', 'og:description'), ('name', 'twitter:description')]:
     html = re.sub(rf'(<meta {attribute}="{re.escape(key)}" content=")[^"]*("\s*/?>)', lambda match: match[1] + escape(summary, quote=True) + match[2], html)
 page.write_text(html)
