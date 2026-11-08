@@ -1,0 +1,27 @@
+.zoom-toolbar{display:flex;align-items:center;gap:.75rem 1rem;flex-wrap:wrap;padding:.5rem var(--space) 1rem;border-block-end:1px solid var(--border)}
+.zoom-label{display:inline-flex;align-items:center;gap:.4rem;font-size:var(--utility);color:#c4cde0}
+.zoom-label svg{inline-size:1.25rem;block-size:1.25rem;fill:none;stroke:currentColor;stroke-width:1.8}
+.zoom-buttons{display:inline-flex;align-items:center;gap:.3rem}
+.zoom-buttons button{inline-size:2.75rem;block-size:2.75rem;border:1px solid #536079;border-radius:.4rem;font-size:1.4rem;color:var(--yellow);background:#090c14}
+.zoom-buttons output{min-inline-size:8ch;text-align:center;font:500 var(--small)/1.5 var(--mono);color:#eef0f7;padding-inline:.4rem}
+.zoom-slider{flex:1 1 16rem;min-inline-size:0;max-inline-size:36rem}
+.zoom-slider input,.chart-pan input{display:block;inline-size:100%;min-block-size:2.75rem;margin:0;accent-color:var(--yellow);cursor:pointer}
+.zoom-stops{display:flex;justify-content:space-between;font:400 var(--small)/1.5 var(--mono);color:#c4cde0;padding-inline:.35rem;pointer-events:none}
+.zoom-toolbar button:disabled{opacity:.5;cursor:default}
+.chart-scroll{overflow:hidden;touch-action:pan-y;overscroll-behavior-inline:contain;user-select:none;position:relative}
+.chart-scroll[data-zoomed="true"]{cursor:grab}
+.chart-scroll[data-dragging="true"]{cursor:grabbing}
+#timeline{display:block;max-inline-size:100%;min-inline-size:0}
+.chart-scroll .chart-release{cursor:pointer}
+.chart-pan{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;padding:0 var(--space)}
+.chart-pan label{font-size:var(--small);color:#c4cde0}
+.chart-pan input{flex:1 1 12rem;min-inline-size:0}
+.chart-pan input:disabled{opacity:.4;cursor:default}
+.chart-help{padding-inline:var(--space);font-size:var(--small);color:#c4cde0}
+.footer-github{display:inline-flex;align-items:center;justify-content:center;inline-size:2.75rem;block-size:2.75rem;border:1px solid #536079;border-radius:.5rem;color:#c4cde0}
+.footer-github:hover{color:var(--yellow);border-color:var(--yellow)}
+.footer-github:focus-visible{outline:3px solid var(--cyan);outline-offset:4px}
+.footer-github svg{inline-size:1.4rem;block-size:1.4rem;fill:currentColor}
+
+.chart-input-surface{position:absolute;inset:0;touch-action:pan-y}
+.chart-release[data-hovered="true"] .point-tooltip{visibility:visible}
