@@ -60,5 +60,7 @@ head = '''<meta name="color-scheme" content="dark">
 <script type="application/ld+json">
 ''' + json.dumps(structured, ensure_ascii=False, indent=2) + '\n</script>\n'
 html = html.replace('</head>', head + '</head>', 1)
+html = re.sub(r'<p id="made-with"[^>]*>.*?</p>\s*', '', html, flags=re.S)
+html = html.replace('</footer>', '</footer>\n<p id="made-with" style="text-align:center;font-size:var(--utility);color:#c4cde0;margin:0;padding:0 0 2rem">Made with <span role="img" aria-label="love">❤️</span> and Qwen</p>', 1)
 page.write_text(html)
 print('Generated favicon, home-screen icons, manifest, and structured page metadata.')
