@@ -68,7 +68,7 @@ svg.append(f'<line x1="{left}" y1="{y(mean):.2f}" x2="{right}" y2="{y(mean):.2f}
 svg.append(f'<line x1="{x(dates[-1]):.2f}" y1="{y(ema):.2f}" x2="{x(ema_date):.2f}" y2="{y(ema):.2f}" stroke="#b62b34" stroke-width="2.5" stroke-dasharray="5 4"/>')
 for day, value, color in [(ema_date, ema, '#b62b34'), (mean_date, mean, '#076878')]:
     svg.append(f'<circle cx="{x(day):.2f}" cy="{y(value):.2f}" r="7" fill="#ffffff" stroke="{color}" stroke-width="3"/>')
-svg.extend([text(72, 546, f'EMA forecast  {long_date(ema_date)}', 22, '#b62b34', 700), text(560, 546, f'Historical mean forecast  {long_date(mean_date)}', 22, '#076878', 700), text(72, 578, 'Compare forecast dates from the gaps between Qwen generation releases.', 16), '</g></svg>'])
+svg.extend([text(72, 546, f'EMA forecast  {long_date(ema_date)}', 22, '#b62b34', 700), text(560, 546, f'Historical mean forecast  {long_date(mean_date)}', 22, '#076878', 700), text(72, 578, 'Explore Qwen release history', 18, '#18222b', 700), text(1128, 578, 'Compare forecasts →', 18, '#076878', 700, anchor='end'), '</g></svg>'])
 assets = ROOT / 'assets'
 assets.mkdir(exist_ok=True)
 source = '\n'.join(svg)
@@ -85,6 +85,7 @@ image_url = base_url + 'assets/' + versioned_image
 for attribute, key in [('property', 'og:image'), ('property', 'og:image:secure_url'), ('name', 'twitter:image')]:
     html = re.sub(rf'(<meta {attribute}="{re.escape(key)}" content=")[^"]*("\s*/?>)', lambda match: match[1] + image_url + match[2], html)
 summary = f'{len(all_rows)} Qwen releases and model updates, the latest on {long_date(date.fromisoformat(all_rows[-1]["date"]))}. Compare release timing with 10 statistical methods.'
+summary += ' Explore the full model history.'
 for attribute, key in [('property', 'og:description'), ('name', 'twitter:description')]:
     html = re.sub(rf'(<meta {attribute}="{re.escape(key)}" content=")[^"]*("\s*/?>)', lambda match: match[1] + escape(summary, quote=True) + match[2], html)
 page.write_text(html)

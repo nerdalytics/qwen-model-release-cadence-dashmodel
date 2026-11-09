@@ -8,7 +8,8 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE_URL = 'https://nerdalytics.github.io/qwen-model-release-cadence-dashmodel/'
-DESCRIPTION = "Has Qwen's release pace slowed? Compare the gaps between Qwen generation releases with forecasts from 10 statistical methods."
+TITLE = 'Cadence | Qwen release timing and model forecast comparison'
+DESCRIPTION = "Explore Qwen model release dates, compare gaps across generations and model sizes, and forecast the next release with 10 statistical methods."
 source = (ROOT / 'favicon.svg').read_bytes()
 for filename, size in [('favicon-32x32.png', 32), ('favicon-48x48.png', 48), ('apple-touch-icon.png', 180), ('icon-192.png', 192), ('icon-512.png', 512)]:
     png = cairosvg.svg2png(bytestring=source, output_width=size, output_height=size)
@@ -20,7 +21,7 @@ png = cairosvg.svg2png(bytestring=source, output_width=256, output_height=256)
 Image.open(io.BytesIO(png)).save(ROOT / 'favicon.ico', sizes=[(16, 16), (32, 32), (48, 48)])
 manifest = {
     'id': './',
-    'name': 'Cadence | Qwen release timing',
+    'name': TITLE,
     'short_name': 'Cadence',
     'description': DESCRIPTION,
     'lang': 'en',
@@ -37,6 +38,9 @@ manifest = {
 (ROOT / 'site.webmanifest').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')
 page = ROOT / 'index.html'
 html = page.read_text()
+html = re.sub(r'<title>.*?</title>', '<title>' + TITLE + '</title>', html)
+for attribute, key in [('property', 'og:title'), ('name', 'twitter:title')]:
+    html = re.sub(rf'(<meta {attribute}="{re.escape(key)}" content=")[^"]*(")', lambda m: m[1] + TITLE + m[2], html)
 html = re.sub(r'(<meta name="description" content=")[^"]*(")', lambda m: m[1] + DESCRIPTION + m[2], html)
 html = re.sub(r'<link\b[^>]*\brel="(?:icon|apple-touch-icon|manifest)"[^>]*>\s*', '', html)
 html = re.sub(r'<meta\b[^>]*\bname="color-scheme"[^>]*>\s*', '', html)
@@ -44,7 +48,7 @@ html = re.sub(r'<script\b[^>]*\btype="application/ld\+json"[^>]*>.*?</script>\s*
 structured = {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
-    'name': 'Cadence | Qwen release timing',
+    'name': TITLE,
     'url': BASE_URL,
     'description': DESCRIPTION,
     'inLanguage': 'en',
