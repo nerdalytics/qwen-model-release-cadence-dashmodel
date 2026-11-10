@@ -42,5 +42,8 @@ for(const tag of ['og:title','twitter:title'])assert.ok(page.includes(`="${tag}"
 for(const tag of ['og:description','twitter:description']){const value=page.match(new RegExp(`="${tag}" content="([^"]+)"`))[1];assert.ok(value.length>=120&&value.length<=160)}
 assert.ok(page.match(/<header[\s\S]*?class="header-github"[\s\S]*?<\/header>/));
 assert.ok(!/<footer>[\s\S]*?github[\s\S]*?<\/footer>/.test(page));
+const styles=fs.readFileSync(require.resolve('../radar.css'),'utf8');
+assert.ok(/html:has\(dialog\[open\]\)\{overflow:hidden\}/.test(styles),'open dialogs lock background scrolling');
+assert.ok(/dialog\{overscroll-behavior:contain\}/.test(styles),'dialog scroll does not chain to the page');
 assert.ok(fs.readFileSync(require.resolve('./generate-social-preview.py'),'utf8').includes('Compare forecasts →'));
 console.log(`UI regressions passed: ${checked} model/layout combinations, baseline touch targets, dialog dismissal/focus, metadata and header GitHub link.`);
