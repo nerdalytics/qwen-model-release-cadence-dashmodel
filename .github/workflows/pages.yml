@@ -33,7 +33,7 @@ jobs:
       - name: Prepare static site
         run: |
           mkdir _site
-          cp index.html *.css *.js SOURCE_AUDIT.md README.md LICENSE _site/
+          cp index.html *.css *.js SOURCE_AUDIT.md MODERN_WEB_GUIDANCE.md README.md LICENSE _site/
           cp -r data assets _site/
           cp favicon.svg favicon.ico favicon-*.png apple-touch-icon.png icon-*.png site.webmanifest _site/
       - uses: actions/upload-pages-artifact@v3

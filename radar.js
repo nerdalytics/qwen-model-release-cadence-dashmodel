@@ -2,7 +2,7 @@ const F=CadenceForecast,DAY=86400000,NS='http://www.w3.org/2000/svg';
 const $=selector=>document.querySelector(selector),esc=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const date=(value,short=false)=>new Date(value).toLocaleDateString('en-US',{month:'short',day:short?undefined:'numeric',year:'numeric',timeZone:'UTC'}),num=value=>value==null?'—':Number(value.toFixed(1)).toString(),days=value=>value==null?'—':String(Math.round(value));
 const plural=(n,one,many=one+'s')=>`${n} ${n===1?one:many}`,list=items=>items.length<2?items.join(''):items.slice(0,-1).join(', ')+' and '+items.at(-1),dayCount=value=>plural(Math.round(value),'day'),dayList=values=>values.length===1?dayCount(values[0]):list(values.map(days))+' days',average=values=>values.reduce((a,b)=>a+b,0)/values.length;
-let dataset,rows,types,unsizedGenerations=[],sharedRange,charts=[],forecastCache=new Map(),selected=new Set(F.algorithms.map(a=>a.id)),zoom=0,offset=0,exploreChart,lastFocus=null;
+let dataset,rows,types,unsizedGenerations=[],sharedRange,charts=[],forecastCache=new Map(),selected=new Set(F.algorithms.map(a=>a.id)),zoom=0,offset=0,exploreChart;
 const now=new Date(),today=now.toISOString().slice(0,10);
 try{const saved=JSON.parse(localStorage.getItem('cadence.algorithms.v1'));if(Array.isArray(saved)&&saved.every(id=>F.algorithms.some(a=>a.id===id)))selected=new Set(saved)}catch{}
 const methodColors={mean:'var(--method-mean)',ema:'var(--method-ema)','rolling-mean':'var(--method-recent)','rolling-median':'var(--method-median)',weighted:'var(--method-weighted)',holt:'var(--method-holt)','damped-holt':'var(--method-damped)',regression:'var(--method-trend)',renewal:'var(--method-renewal)',bayesian:'var(--method-bayesian)'};
@@ -11,7 +11,7 @@ function predictions(type,updates=true,conditioned=false){const key=type+'|'+upd
 const state=r=>!r.date?'Not available':r.conditional?'Counts the wait so far':r.age>0?'Date passed':r.age===0?'Due today':'Upcoming';
 function svgElement(tag,attrs={},text){const node=document.createElementNS(NS,tag);for(const [key,value] of Object.entries(attrs))node.setAttribute(key,value);if(text!==undefined)node.textContent=text;return node}
 function showDetails(point){
- lastFocus=document.activeElement;const dialog=$('#point-dialog');$('#dialog-kind').textContent=point.forecast?'FORECAST · '+state(point.result).toUpperCase():'RECORDED '+(point.record.event==='update'?'MODEL UPDATE':'RELEASE');$('#dialog-title').textContent=point.forecast?point.type+' · '+point.result.name:point.record.name;
+ const dialog=$('#point-dialog');$('#dialog-kind').textContent=point.forecast?'FORECAST · '+state(point.result).toUpperCase():'RECORDED '+(point.record.event==='update'?'MODEL UPDATE':'RELEASE');$('#dialog-title').textContent=point.forecast?point.type+' · '+point.result.name:point.record.name;
  const field=(label,value)=>`<div><dt>${esc(label)}</dt><dd>${value}</dd></div>`;
  if(point.forecast){
   const r=point.result,s=F.summarize(history(point.type,point.updates!==false)),score=r.backtest;
@@ -71,7 +71,6 @@ function todayForecasts(config){
  return {dated,missing:config.results.filter(r=>!r.date).length};
 }
 function showTodayDialog(config){
- lastFocus=document.activeElement;
  $('#dialog-kind').textContent='CALCULATION DATE';
  $('#dialog-title').textContent='Today · '+date(today);
  const field=(label,value)=>`<div><dt>${esc(label)}</dt><dd>${value}</dd></div>`;
@@ -114,7 +113,7 @@ function modelNotes(type,s){
 }
 function modelCard(type,parent,index){
  const s=F.summarize(history(type)),results=predictions(type).filter(r=>['mean','ema'].includes(r.id)),commentary=modelCommentary(type,s),article=document.createElement('article');article.className='model-card';
- article.innerHTML=`<div class="model-head"><div><h3>${esc(type)}</h3><p>Latest entry: ${s.last?date(s.last.date):'None'}</p></div><span class="model-count">${plural(s.dates.length,'date')}<br>${plural(s.gaps.length,'gap')}</span></div><figure class="chart-figure"><div class="chart-host" id="model-chart-${index}"></div><figcaption>${s.gaps.length?'The latest 2 dates are '+dayCount(s.gaps.at(-1))+' apart.':'This model type has only 1 date.'}</figcaption></figure><dl class="model-forecasts">${results.map(r=>`<div><dt><i class="dot" style="background:${r.color}"></i>${esc(r.name)}</dt><dd>${r.date?date(r.date):'Not available'}</dd><p class="${r.age>0?'past':''}">${r.date?state(r):''}</p></div>`).join('')}</dl><div class="model-commentary"><h4>${commentary.heading}</h4>${commentary.body}${modelNotes(type,s)}<a class="model-reading-link" href="#explore" data-explore-model="${esc(type)}">Compare methods for ${esc(type)} <span aria-hidden="true">↓</span></a></div>`;
+ article.innerHTML=`<div class="model-head"><div><h3>${esc(type)}</h3><p>Latest entry: ${s.last?date(s.last.date):'None'}</p></div><span class="model-count">${plural(s.dates.length,'date')}<br>${plural(s.gaps.length,'gap')}</span></div><figure class="chart-figure"><div class="chart-host" id="model-chart-${index}"></div><figcaption>${s.gaps.length?'The latest 2 dates are '+dayCount(s.gaps.at(-1))+' apart.':'This model type has only 1 date.'}</figcaption></figure><dl class="model-forecasts">${results.map(r=>`<div><dt><i class="dot" style="background:${r.color}"></i>${esc(r.name)}</dt><dd>${r.date?date(r.date):'Not available'}<p class="${r.age>0?'past':''}">${r.date?state(r):''}</p></dd></div>`).join('')}</dl><div class="model-commentary"><h4>${commentary.heading}</h4>${commentary.body}${modelNotes(type,s)}<a class="model-reading-link" href="#explore" data-explore-model="${esc(type)}">Compare methods for ${esc(type)} <span aria-hidden="true">↓</span></a></div>`;
  parent.append(article);article.querySelector('[data-explore-model]').addEventListener('click',()=>{$('#model-select').value=type;updateExplore(true)});makeChart(article.querySelector('.chart-host'),{title:type+' gaps and forecasts',types:[type],results,range:sharedRange});
 }
 function renderEditorial(generation,latest){
@@ -186,11 +185,13 @@ function renderReleaseLog(){const matches=matchingReleases();$('#log-count').tex
 function exportReleases(){const cell=value=>'"'+String(value??'').replace(/^[=+@-]/,"'").replaceAll('"','""')+'"',data=[['Date','Entry','Model types','Entry type','API name','Availability','Sources'],...matchingReleases().map(r=>[r.date,r.name,r.modelTypes.join('; '),r.event==='update'?'Model update':'Release',r.apiModel||'',r.availability,(r.sourceIds||[]).map(id=>dataset.sources[id]?.url).filter(Boolean).join('; ')])],blob=new Blob(['\ufeff'+data.map(r=>r.map(cell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='qwen-release-history.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 function syncBackTop(){const viewport=window.visualViewport?.height||document.documentElement.clientHeight;$('#back-top').hidden=window.scrollY<viewport}
 const pointDialog=$('#point-dialog');
-$('#dialog-close').addEventListener('click',()=>pointDialog.close());
-let backdropPressed=false;
-const outsideDialog=event=>{const rect=pointDialog.getBoundingClientRect();return event.target===pointDialog&&(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)};
-pointDialog.addEventListener('pointerdown',event=>{backdropPressed=outsideDialog(event)});
-pointDialog.addEventListener('click',event=>{if(backdropPressed&&outsideDialog(event))pointDialog.close();backdropPressed=false});
-pointDialog.addEventListener('close',()=>{backdropPressed=false;if(lastFocus?.isConnected)lastFocus.focus({preventScroll:true})});
+if(!('closedBy' in HTMLDialogElement.prototype)){
+ let backdropPressed=false;
+ const outsideDialog=event=>{const rect=pointDialog.getBoundingClientRect();return event.target===pointDialog&&(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)};
+ const resetBackdrop=()=>{backdropPressed=false};
+ pointDialog.addEventListener('pointerdown',event=>{backdropPressed=outsideDialog(event)});
+ pointDialog.addEventListener('pointerup',event=>{const dismiss=backdropPressed&&outsideDialog(event);resetBackdrop();if(dismiss)pointDialog.close()});
+ for(const event of ['pointercancel','cancel','close'])pointDialog.addEventListener(event,resetBackdrop);
+}
 window.addEventListener('scroll',syncBackTop,{passive:true});window.addEventListener('resize',syncBackTop);window.visualViewport?.addEventListener('resize',syncBackTop);$('#back-top').onclick=()=>{window.scrollTo({top:0,behavior:'instant'});$('#page-title').setAttribute('tabindex','-1');$('#page-title').focus({preventScroll:true});syncBackTop()};syncBackTop();
 initialize().catch(error=>{$('#load-error').hidden=false;$('#load-error').textContent='Unable to load Cadence: '+error.message;console.error(error)});

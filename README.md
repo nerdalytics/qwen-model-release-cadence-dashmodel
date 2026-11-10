@@ -9,3 +9,5 @@ Start with the generation history and the method comparison. Separate model type
 Search the release log or export matching entries as CSV. The page follows the light or dark theme of your device and remembers your method selection.
 
 Updates to the dataset are manual, so the newest releases can be missing. The [source audit](SOURCE_AUDIT.md) lists coverage, terms and corrections.
+
+The [modern web guidance audit](MODERN_WEB_GUIDANCE.md) documents native dialog behavior, browser fallbacks, accessibility, loading improvements and verification.

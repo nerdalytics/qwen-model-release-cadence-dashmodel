@@ -23,18 +23,23 @@ for(const width of [250,320,393,852,1440])for(const updates of [true,false])for(
  }
  checked++;
 }
-const dialog=element('dialog'),closeButton=element('button');let closes=0,focuses=0;
-dialog.getBoundingClientRect=()=>({left:20,right:300,top:20,bottom:400});
-dialog.close=()=>{closes++;dialog.listeners.close()};
-document.querySelector=s=>s==='#point-dialog'?dialog:closeButton;
-context.trigger={isConnected:true,focus(options){assert.equal(options.preventScroll,true);focuses++}};
-vm.runInContext('lastFocus=trigger',context);
-vm.runInContext(source.slice(source.indexOf("const pointDialog=$('#point-dialog');"),source.indexOf("window.addEventListener('scroll',syncBackTop")),context);
-closeButton.listeners.click();assert.equal(closes,1);assert.equal(focuses,1);
-const inside={target:dialog,clientX:100,clientY:100},outside={target:dialog,clientX:10,clientY:10};
-dialog.listeners.pointerdown(inside);dialog.listeners.click(inside);assert.equal(closes,1);
-dialog.listeners.pointerdown(inside);dialog.listeners.click(outside);assert.equal(closes,1);
-dialog.listeners.pointerdown(outside);dialog.listeners.click(outside);assert.equal(closes,2);assert.equal(focuses,2);
+const dismissal=source.slice(source.indexOf("const pointDialog=$('#point-dialog');"),source.indexOf("window.addEventListener('scroll',syncBackTop"));
+for(const native of [false,true]){
+ const dialog=element('dialog');let closes=0;
+ dialog.getBoundingClientRect=()=>({left:20,right:300,top:20,bottom:400});
+ dialog.close=()=>{closes++;dialog.listeners.close?.()};
+ const fixture={document:{querySelector:()=>dialog},HTMLDialogElement:{prototype:native?{closedBy:'any'}:{}}};
+ vm.runInNewContext('const $=s=>document.querySelector(s);'+dismissal,fixture);
+ if(native){assert.deepEqual(Object.keys(dialog.listeners),[],'native dismissal needs no JS listeners');continue}
+ const inside={target:dialog,clientX:100,clientY:100},outside={target:dialog,clientX:10,clientY:10},child={...outside,target:element('button')};
+ dialog.listeners.pointerdown(inside);dialog.listeners.pointerup(inside);assert.equal(closes,0);
+ dialog.listeners.pointerdown(inside);dialog.listeners.pointerup(outside);assert.equal(closes,0,'selection drag must not dismiss');
+ dialog.listeners.pointerdown(outside);dialog.listeners.pointerup(inside);assert.equal(closes,0);
+ dialog.listeners.pointerdown(child);dialog.listeners.pointerup(outside);assert.equal(closes,0);
+ dialog.listeners.pointerdown(outside);dialog.listeners.pointerup(outside);assert.equal(closes,1);
+ for(const event of ['pointercancel','cancel','close']){dialog.listeners.pointerdown(outside);dialog.listeners[event]();dialog.listeners.pointerup(outside);assert.equal(closes,1,event+' clears stale pointer state')}
+ dialog.listeners.pointerup(outside);assert.equal(closes,1,'a release alone must not dismiss');
+}
 const page=fs.readFileSync(require.resolve('../index.html'),'utf8'),title=page.match(/<title>(.*?)<\/title>/)[1],description=page.match(/<meta name="description" content="([^"]+)"/)[1];
 assert.ok(title.length>=50&&title.length<=60);
 assert.ok(description.length>=120&&description.length<=160);
@@ -43,7 +48,24 @@ for(const tag of ['og:description','twitter:description']){const value=page.matc
 assert.ok(page.match(/<header[\s\S]*?class="header-github"[\s\S]*?<\/header>/));
 assert.ok(!/<footer>[\s\S]*?github[\s\S]*?<\/footer>/.test(page));
 const styles=fs.readFileSync(require.resolve('../radar.css'),'utf8');
-assert.ok(/html:has\(dialog\[open\]\)\{overflow:hidden\}/.test(styles),'open dialogs lock background scrolling');
-assert.ok(/dialog\{overscroll-behavior:contain\}/.test(styles),'dialog scroll does not chain to the page');
+assert.ok(/dialog:modal\{overscroll-behavior:contain\}/.test(styles),'modal scroll does not chain to the page');
+assert.ok(/dialog::backdrop\{overflow:hidden;overscroll-behavior:contain\}/.test(styles),'backdrop establishes contained scrolling');
+assert.ok(!/html:has\(dialog/.test(styles),'opening a dialog must not mutate root overflow');
+assert.ok(page.includes('<dialog id="point-dialog" closedby="any"'));
+assert.ok(/<form method="dialog"><button id="dialog-close"[^>]*autofocus/.test(page),'close and initial focus are native');
+assert.ok(!source.includes('lastFocus'),'focus restoration belongs to the native dialog');
+assert.ok(styles.includes('container:chart-zoom / inline-size'));
+assert.ok(styles.includes('@container chart-zoom (min-width:24rem)'));
+assert.ok(page.includes('<meta name="text-scale" content="scale">'));
+assert.equal((page.match(/name="color-scheme"/g)||[]).length,1);
+assert.ok(page.indexOf('name="color-scheme"')<page.indexOf('rel="stylesheet"'));
+assert.ok(!source.includes('</dd><p'), 'definition-list descriptions must contain their status text');
+assert.ok(page.includes('<search class="log-controls" aria-label="Release entries">'));
+assert.ok(page.includes('<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'));
+for(const file of ['radar.css','editorial.css']){
+ const css=fs.readFileSync(require.resolve('../'+file),'utf8');
+ assert.ok(!/@import/.test(css),'font CSS must be discovered in HTML');
+ assert.ok(!/(?:html|:root)\s*\{[^}]*font-size\s*:/.test(css),'root font size belongs to the browser');
+}
 assert.ok(fs.readFileSync(require.resolve('./generate-social-preview.py'),'utf8').includes('Compare forecasts →'));
 console.log(`UI regressions passed: ${checked} model/layout combinations, baseline touch targets, dialog dismissal/focus, metadata and header GitHub link.`);

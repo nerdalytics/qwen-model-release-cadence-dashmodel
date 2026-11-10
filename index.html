@@ -1,7 +1,11 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f6f6f3">
+<meta charset="utf-8">
+<meta name="color-scheme" content="light dark">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f6f6f3">
+<meta name="text-scale" content="scale">
+<script src="theme.js?v=19"></script>
 <meta name="description" content="Explore Qwen model release dates, compare gaps across generations and model sizes, and forecast the next release with 10 statistical methods."><title>Cadence | Qwen release timing and model forecast comparison</title>
 <link rel="canonical" href="https://nerdalytics.github.io/qwen-model-release-cadence-dashmodel/">
 <meta property="og:type" content="website">
@@ -22,12 +26,13 @@
 <meta name="twitter:image" content="https://nerdalytics.github.io/qwen-model-release-cadence-dashmodel/assets/social-preview-bc9557b5a943.png">
 <meta name="twitter:image:alt" content="Qwen generation gaps with dates forecast by the historical mean and EMA.">
 
-<link rel="stylesheet" href="radar.css?v=18">
-<link rel="stylesheet" href="editorial.css?v=18">
-<script src="theme.js?v=18"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700;800&amp;family=IBM+Plex+Mono:wght@400;500&amp;family=Source+Serif+4:wght@400;500;600;700&amp;display=swap">
+<link rel="stylesheet" href="radar.css?v=19">
+<link rel="stylesheet" href="editorial.css?v=19">
 <script src="forecast.js?v=18" defer></script>
-<script src="radar.js?v=18" defer></script>
-<meta name="color-scheme" content="light dark">
+<script src="radar.js?v=19" defer></script>
 <link rel="icon" type="image/x-icon" sizes="16x16 32x32 48x48" href="./favicon.ico">
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="48x48" href="./favicon-48x48.png">
@@ -95,7 +100,7 @@
         <div class="forecast-readout"><div class="readout-heading"><h3>Selected forecasts</h3><span id="estimate-count"></span></div><p class="small">Select a forecast to see its calculation and historical tests.</p><div id="forecast-results" class="forecast-results"></div></div>
       </div>
     </section>
-    <section id="release-log" aria-labelledby="release-log-title"><div class="section-heading"><div><p class="eyebrow">Release log</p><h2 id="release-log-title">Every recorded entry</h2></div><span class="context-pill">Releases and model updates</span></div><p class="reading">Search by name, model type, date or API name. Select an entry to read its source evidence.</p><div class="log-controls"><label for="release-search">Search entries<input type="search" id="release-search" placeholder="Name, model type, date or API name" aria-controls="release-rows"></label><button id="export-releases" type="button">Export CSV</button></div><p class="small" id="log-count" role="status" aria-live="polite"></p><div class="log-scroll" tabindex="0" role="region" aria-label="Release log, scroll horizontally if needed"><table class="release-table"><caption class="sr-only">Recorded Qwen releases and model updates with source links</caption><thead><tr><th scope="col">Date</th><th scope="col">Entry</th><th scope="col">Model types</th><th scope="col">Sources</th></tr></thead><tbody id="release-rows"></tbody></table></div><a href="SOURCE_AUDIT.md" class="view-source-audit">Read the source audit</a></section>
+    <section id="release-log" aria-labelledby="release-log-title"><div class="section-heading"><div><p class="eyebrow">Release log</p><h2 id="release-log-title">Every recorded entry</h2></div><span class="context-pill">Releases and model updates</span></div><p class="reading">Search by name, model type, date or API name. Select an entry to read its source evidence.</p><search class="log-controls" aria-label="Release entries"><label for="release-search">Search entries<input type="search" id="release-search" placeholder="Name, model type, date or API name" aria-controls="release-rows"></label><button id="export-releases" type="button">Export CSV</button></search><p class="small" id="log-count" role="status" aria-live="polite"></p><div class="log-scroll" tabindex="0" role="region" aria-label="Release log, scroll horizontally if needed"><table class="release-table"><caption class="sr-only">Recorded Qwen releases and model updates with source links</caption><thead><tr><th scope="col">Date</th><th scope="col">Entry</th><th scope="col">Model types</th><th scope="col">Sources</th></tr></thead><tbody id="release-rows"></tbody></table></div><a href="SOURCE_AUDIT.md" class="view-source-audit">Read the source audit</a></section>
     <section id="methodology" aria-labelledby="method-title"><div class="section-heading"><div><p class="eyebrow">Methodology</p><h2 id="method-title">How the calculations work</h2></div></div><div class="methodology-grid">
       <article><h3>Which entries count</h3><p>An entry is either a release or a model update. A release adds a new model. A model update changes an existing model, for example with a new checkpoint or a longer context. Generation counts the first public release of each numbered generation, including point releases such as Qwen3.5 to Qwen3.8, whether through the API or as open weights. Every other model type uses its own dates. Entries on the same day count once per model type.</p></article>
       <article><h3>Historical mean, recent methods and EMA</h3><p>Historical mean averages every gap. EMA, the exponential moving average, starts with the first gap. Each later gap contributes 20%, and the running value keeps 80%. Recent mean and Recent median use the last 3 gaps. Weighted mean weights them 20%, 30% and 50%, oldest to newest. With fewer gaps, the available weights are rescaled to total 100%.</p></article>
@@ -107,7 +112,7 @@
     <p id="load-error" class="load-error" role="alert" hidden></p>
   </main>
   <footer><span>Made with ❤️ and Qwen</span></footer>
-  <dialog id="point-dialog" aria-labelledby="dialog-title"><div class="dialog-head"><p class="eyebrow" id="dialog-kind">DETAILS</p><button id="dialog-close" type="button" aria-label="Close details">×</button></div><h2 id="dialog-title"></h2><div id="dialog-content"></div></dialog>
+  <dialog id="point-dialog" closedby="any" aria-labelledby="dialog-title"><div class="dialog-head"><p class="eyebrow" id="dialog-kind">DETAILS</p><form method="dialog"><button id="dialog-close" type="submit" aria-label="Close details" autofocus>×</button></form></div><h2 id="dialog-title"></h2><div id="dialog-content"></div></dialog>
   <button id="back-top" class="back-top" type="button" aria-label="Scroll to top" hidden>↑</button>
 </body>
 </html>

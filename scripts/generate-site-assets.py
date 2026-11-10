@@ -44,6 +44,7 @@ for attribute, key in [('property', 'og:title'), ('name', 'twitter:title')]:
 html = re.sub(r'(<meta name="description" content=")[^"]*(")', lambda m: m[1] + DESCRIPTION + m[2], html)
 html = re.sub(r'<link\b[^>]*\brel="(?:icon|apple-touch-icon|manifest)"[^>]*>\s*', '', html)
 html = re.sub(r'<meta\b[^>]*\bname="color-scheme"[^>]*>\s*', '', html)
+html = re.sub(r'(<meta\b[^>]*\bcharset=[^>]*>)', r'\1\n<meta name="color-scheme" content="light dark">', html, count=1)
 html = re.sub(r'<script\b[^>]*\btype="application/ld\+json"[^>]*>.*?</script>\s*', '', html, flags=re.S)
 structured = {
     '@context': 'https://schema.org',
@@ -54,8 +55,7 @@ structured = {
     'inLanguage': 'en',
     'about': {'@type': 'Thing', 'name': 'Qwen model release timing'},
 }
-head = '''<meta name="color-scheme" content="light dark">
-<link rel="icon" type="image/x-icon" sizes="16x16 32x32 48x48" href="./favicon.ico">
+head = '''<link rel="icon" type="image/x-icon" sizes="16x16 32x32 48x48" href="./favicon.ico">
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="48x48" href="./favicon-48x48.png">
 <link rel="icon" type="image/svg+xml" href="./favicon.svg">
