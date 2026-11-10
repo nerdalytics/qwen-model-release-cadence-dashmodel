@@ -14,7 +14,10 @@ visual design, and the dependency-free static deployment.
   The retained legacy app also gates its backdrop fallback on feature detection.
 - Scroll containment: modal and backdrop use `overscroll-behavior: contain`;
   the backdrop establishes a scroll container with `overflow: hidden`.
-  Opening a modal no longer changes root overflow or removes the page scrollbar.
+  A modal-only root lock (`html:has(dialog:modal)`) also prevents background
+  scrolling in Safari. The existing `scrollbar-gutter: stable` reserves the
+  scrollbar space so locking does not change content width. The page is not
+  fixed or repositioned, and closing the last modal removes the lock naturally.
 - Text scaling: `meta name="text-scale" content="scale"` opts in to OS text
   preferences without overriding root font size. Existing relative typography,
   wrapping controls, and adaptive grids remain in place. Flex children can shrink
@@ -34,14 +37,29 @@ visual design, and the dependency-free static deployment.
 Baseline Widely available features need no additional fallback. Newer features
 follow the retrieved guides: light dismiss has a feature-detected fallback;
 OS text-scale opt-in degrades to ordinary browser text sizing and zoom; modal
-scroll containment is progressive enhancement. Non-overflowing-container
-containment cannot be detected with `CSS.supports`. Safari may still scroll
-behind a non-overflowing modal; do not restore root-overflow locking to hide this.
+scroll containment alone is progressive enhancement. Non-overflowing-container
+containment cannot be detected with `CSS.supports`.
+
+**Project requirement:** Background page scrolling must be blocked while a modal
+is open, including in iOS Safari. This overrides the guide's recommendation to
+accept background scrolling as graceful degradation. The previous guide
+adoption removed a working root lock and caused a user-reported Safari
+regression. Keep the modal-only root lock and stable gutter alongside native
+scroll containment. Preserve dialog scrolling, native dismissal, page scroll
+position, and normal scrolling after dismissal. Do not replace this lock with
+`overscroll-behavior` alone or gate it on `CSS.supports`.
 
 Run every `scripts/test-*.js` with Node. The UI regression suite covers 330
 model/layout combinations, native and fallback dismissal, selection drags,
-pointer cancellation, markup, font loading, and scroll containment. Run asset
+pointer cancellation, markup, font loading, scroll containment, and the Safari
+root-lock/gutter requirement. Run asset
 generation and repeat tests to verify the deployed HTML, not just source HTML.
+The Pages workflow also runs `node scripts/test-dialog-scroll-browser.cjs` with
+Playwright 1.65.0 in Chromium and WebKit at desktop and phone viewport sizes.
+It exercises wheel gestures over the backdrop and inside short/overflowing
+dialogs, both scroll boundaries, close-button/Escape/backdrop dismissal,
+position and width preservation, native focus return, and scroll unlocking.
+This engine-level test does not replace physical iPhone touch testing.
 
 The legacy scan checks only its deterministic subset (approximately 20% of the
 catalog); zero findings are not a complete accessibility or compatibility audit.

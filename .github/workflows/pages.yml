@@ -30,6 +30,12 @@ jobs:
         run: python scripts/generate-social-preview.py
       - name: Generate icons and SEO metadata
         run: python scripts/generate-site-assets.py
+      - name: Install browser regression tools
+        run: |
+          npm install --no-save --package-lock=false playwright@1.65.0
+          npx playwright install --with-deps chromium webkit
+      - name: Check modal scrolling in Chromium and WebKit
+        run: node scripts/test-dialog-scroll-browser.cjs
       - name: Prepare static site
         run: |
           mkdir _site
