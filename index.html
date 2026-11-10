@@ -22,11 +22,11 @@
 <meta name="twitter:image" content="https://nerdalytics.github.io/qwen-model-release-cadence-dashmodel/assets/social-preview-bc9557b5a943.png">
 <meta name="twitter:image:alt" content="Qwen generation gaps with dates forecast by the historical mean and EMA.">
 
-<link rel="stylesheet" href="radar.css?v=16">
-<link rel="stylesheet" href="editorial.css?v=16">
-<script src="theme.js?v=16"></script>
-<script src="forecast.js?v=16" defer></script>
-<script src="radar.js?v=16" defer></script>
+<link rel="stylesheet" href="radar.css?v=17">
+<link rel="stylesheet" href="editorial.css?v=17">
+<script src="theme.js?v=17"></script>
+<script src="forecast.js?v=17" defer></script>
+<script src="radar.js?v=17" defer></script>
 <meta name="color-scheme" content="light dark">
 <link rel="icon" type="image/x-icon" sizes="16x16 32x32 48x48" href="./favicon.ico">
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
@@ -67,7 +67,7 @@
       </div>
       <div class="section-heading"><div><p class="eyebrow">Generation history</p><h2>Days between generation releases</h2></div><span class="context-pill">Generation releases only</span></div>
       <p id="generation-intro" class="reading">Loading release history…</p>
-      <figure class="chart-figure overview-figure"><div class="figure-head"><span><i class="dot lime"></i>Gap between generation releases</span><div class="legend"><span><i class="line cyan"></i>Historical mean forecast</span><span><i class="line lime dashed"></i>EMA forecast</span></div></div><div id="overview-chart" class="chart-host"></div><figcaption>Dates run along the bottom. The gap in days since the previous generation release runs up the left. The diamond marks the first entry. Hollow dots are forecasts. Select a point for details.</figcaption></figure>
+      <figure class="chart-figure overview-figure"><div class="figure-head"><span><i class="dot lime"></i>Gap between generation releases</span><div class="legend"><span><i class="line cyan"></i>Historical mean forecast</span><span><i class="line lime dashed"></i>EMA forecast</span></div></div><div id="overview-chart" class="chart-host"></div><figcaption>Dates run along the bottom. The gap in days since the previous generation release runs up the left. The diamond marks the first entry. Hollow dots are forecasts. Select a point for details. The dashed vertical line marks today; select it for the wait so far and the upcoming forecast dates.</figcaption></figure>
       <div class="takeaways"><div><span class="eyebrow">Last 3 gaps</span><p id="history-takeaway">—</p></div><div><span class="eyebrow">Next generation forecast</span><p id="estimate-takeaway">—</p></div><div><span class="eyebrow">Latest gap</span><p id="latest-gap-summary"></p></div></div>
       <div class="editorial-analysis"><article><p class="eyebrow">The change over time</p><h3>Recent gaps compared with the full history</h3><div id="generation-analysis"></div></article><aside class="analyst-note"><p class="eyebrow">The calculation</p><h3>From a gap to a date</h3><div id="date-calculation"></div></aside></div>
     </section>
@@ -87,7 +87,7 @@
         <div class="filter-row"><label>Model type<select id="model-select"><option>Generation</option></select></label><label>Show history from<select id="year-select"><option value="all">First entry</option></select></label><label class="check-control"><input id="include-updates" type="checkbox" checked>Include model updates</label></div>
         <details class="method-picker"><summary>Forecast methods <span id="method-selection">10 selected</span></summary><fieldset class="algorithm-fieldset"><legend>Choose methods</legend><div class="algorithm-heading"><p>Your selection is saved in this browser.</p><div class="algorithm-actions"><button id="select-all" type="button">Select all</button><button id="select-none" type="button">Clear</button></div></div><div id="algorithm-choices" class="algorithm-choices"></div></fieldset><div class="conditional-options"><label><input id="conditioned" type="checkbox">Count the wait since the latest entry</label><p>Turn this on only if you know that no newer release exists for this model type up to today. Lognormal renewal and Bayesian partial pooling then treat the time already waited as part of the next gap. Other methods do not change.</p></div></details>
         <div class="explore-status" id="explore-status" role="status" aria-live="polite"></div>
-        <figure class="chart-figure explore-figure"><div id="explore-chart" class="chart-host"></div><figcaption id="explore-caption">The diamond marks the first entry, before a gap can be calculated. Filled circles mark later entries; hollow circles mark forecasts. Select any marker for details. When points overlap, select again to open the next entry or method.</figcaption></figure>
+        <figure class="chart-figure explore-figure"><div id="explore-chart" class="chart-host"></div><figcaption id="explore-caption">The diamond marks the first entry, before a gap can be calculated. Filled circles mark later entries; hollow circles mark forecasts. Select any marker for details. When points overlap, select again to open the next entry or method. The dashed vertical line marks today; select it for the wait so far and the next forecast per method.</figcaption></figure>
         <div class="navigation-controls">
           <div class="zoom-controls"><div class="control-label"><label for="zoom"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6.5"/><path d="m15 15 6 6"/></svg>Zoom <output id="zoom-output">1×</output></label><button id="zoom-reset" type="button">Reset</button></div><div class="range-row"><button id="zoom-minus" type="button" aria-label="Zoom out">−</button><div><input id="zoom" type="range" min="0" max="100" step="0.1" value="0" list="zoom-ticks" aria-controls="explore-chart"><datalist id="zoom-ticks"><option value="0"></option><option value="25"></option><option value="50"></option><option value="75"></option><option value="100"></option></datalist><div class="range-ticks" aria-hidden="true"><span>Fit</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div></div><button id="zoom-plus" type="button" aria-label="Zoom in">+</button></div></div>
           <div class="pan-controls"><div class="control-label"><label for="pan">Timeline</label><span id="pan-output">All dates</span></div><input id="pan" type="range" min="0" max="100" step="0.1" value="0" disabled aria-controls="explore-chart"><p>Scroll over the chart to zoom at your cursor. On touch screens, pinch to zoom.</p></div>

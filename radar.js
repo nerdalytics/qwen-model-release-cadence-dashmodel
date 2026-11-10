@@ -28,7 +28,7 @@ function drawChart(chart){
  const left=49,right=width-22,top=32,bottom=height-42,plotW=right-left,plotH=bottom-top;
  const historical=config.types.flatMap(type=>{const s=F.summarize(history(type,config.updates!==false));return s.dates.map((d,i)=>({type,date:d,gap:i?s.gaps[i-1]:null,record:s.rows.find(r=>r.date===d),forecast:false})).filter(p=>!config.year||p.date>=config.year+'-01-01')});
  const forecasts=config.results.filter(r=>r.date).map(result=>({type:result.modelType,result,date:result.date,gap:result.gap,forecast:true,updates:config.updates})),points=[...historical,...forecasts];
- let start=config.range?config.range[0]:Math.min(...points.map(p=>Date.parse(p.date)),Date.parse(today)),end=config.range?config.range[1]:Math.max(...points.map(p=>Date.parse(p.date)),start+90*DAY);if(config.year)start=Math.max(start,Date.parse(config.year+'-01-01'));if(end<=start)end=start+90*DAY;
+ let start=config.range?config.range[0]:Math.min(...points.map(p=>Date.parse(p.date)),Date.parse(today)),end=config.range?config.range[1]:Math.max(...points.map(p=>Date.parse(p.date)),Date.parse(today),start+90*DAY);if(config.year)start=Math.max(start,Date.parse(config.year+'-01-01'));if(end<=start)end=start+90*DAY;
  const range=end-start,edgePadding=range*22/Math.max(1,plotW-44);start-=edgePadding;end+=edgePadding;const paddedRange=end-start,factor=config.explore?1+zoom*.07:1,viewStart=start+(config.explore?offset:0)*paddedRange,viewSpan=paddedRange/factor;
  const max=Math.max(30,...points.map(p=>p.gap||0)),step=Math.max(10,Math.ceil(max/4/10)*10),yMax=step*4,x=d=>left+(Date.parse(d)-viewStart)/viewSpan*plotW,y=gap=>bottom-(gap||0)/yMax*plotH;
  chart.geometry={left,right,plotW,start,end,span:paddedRange};
@@ -48,9 +48,48 @@ function drawChart(chart){
   const explain=()=>{tooltip.innerHTML=`<strong>${esc(p.forecast?p.type+' · '+p.result.name:p.record.name)}</strong>${date(p.date)} · ${p.gap===null?'First entry':dayCount(p.gap)}${p.forecast?' · '+state(p.result):''}`};
   node.addEventListener('pointerenter',explain);node.addEventListener('pointerleave',()=>tooltip.replaceChildren());node.addEventListener('focus',()=>{nodes.forEach(n=>n.setAttribute('tabindex',n===node?0:-1));explain()});node.addEventListener('blur',()=>tooltip.replaceChildren());node.addEventListener('click',()=>{if(performance.now()<(chart.suppressClickUntil||0))return;node.focus({preventScroll:true});const same=points.filter(other=>other.date===p.date&&Math.abs((other.gap||0)-(p.gap||0))<.001&&other.forecast===p.forecast),signature=p.date+'|'+p.gap+'|'+p.forecast;chart.lastHit=chart.lastHit?.signature===signature?{signature,index:(chart.lastHit.index+1)%same.length}:{signature,index:0};showDetails(same[chart.lastHit.index]||p)});node.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();showDetails(p)}else if(['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();let target=event.key==='Home'?0:event.key==='End'?nodes.length-1:nodes.indexOf(node)+(event.key==='ArrowRight'?1:-1);target=(target+nodes.length)%nodes.length;nodes[target]?.focus({preventScroll:true})}});nodes.push(node);plot.append(node);
  }
+ const todayMark=x(today);
+ if(Number.isFinite(todayMark)&&todayMark>=left&&todayMark<=right){
+  const waits=todayWaits(config),latest=waits[0],label=`Today, ${date(today)}. ${latest?plural(latest.elapsed,'day')+' since the latest entry in this chart.':'No dated entry in this selection yet.'} Open details.`;
+  const node=svgElement('g',{class:'point today-point',role:'button',tabindex:'today'===activeKey||(!activeKey&&!nodes.length)?0:-1,'data-key':'today','aria-label':label,'aria-haspopup':'dialog'});
+  node.append(svgElement('title',{},label),svgElement('line',{x1:todayMark,y1:top,x2:todayMark,y2:bottom,class:'today-line','stroke':'var(--text)','stroke-dasharray':'2 5','stroke-width':1.5,opacity:.55,'aria-hidden':'true'}),svgElement('text',{x:Math.max(left+16,Math.min(right-16,todayMark)),y:top+16,class:'today-label','text-anchor':'middle','font-size':Math.min(16,14+width/1500),fill:'var(--text)','aria-hidden':'true'},'Today'),svgElement('rect',{x:todayMark-11,y:top,width:22,height:plotH,fill:'transparent','aria-hidden':'true'}));
+  const explain=()=>{tooltip.innerHTML=`<strong>Today · ${date(today)}</strong>${latest?plural(latest.elapsed,'day')+' after '+esc(latest.last.name)+' · '+date(latest.last.date):'No dated entries in this selection'}`};
+  node.addEventListener('pointerenter',explain);node.addEventListener('pointerleave',()=>tooltip.replaceChildren());node.addEventListener('focus',()=>{nodes.forEach(n=>n.setAttribute('tabindex',n===node?0:-1));explain()});node.addEventListener('blur',()=>tooltip.replaceChildren());
+  node.addEventListener('click',()=>{if(performance.now()<(chart.suppressClickUntil||0))return;node.focus({preventScroll:true});showTodayDialog(config)});
+  node.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();showTodayDialog(config)}else if(['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();let target=event.key==='Home'?0:event.key==='End'?nodes.length-1:nodes.indexOf(node)+(event.key==='ArrowRight'?1:-1);target=(target+nodes.length)%nodes.length;nodes[target]?.focus({preventScroll:true})}});
+  nodes.splice(points.filter(p=>p.date<today).length,0,node);plot.append(node);
+ }
  if(!historical.length)svg.append(svgElement('text',{x:left+plotW/2,y:top+plotH/2,fill:'var(--muted)','font-size':16,'text-anchor':'middle'},'No entries in this date range'));
  if(activeKey)nodes.find(n=>n.dataset.key===activeKey)?.focus({preventScroll:true});
  if(config.explore)syncZoom();
+}
+function todayWaits(config){
+ return config.types.map(type=>{const entries=history(type,config.updates!==false).filter(r=>!config.year||r.date>=config.year+'-01-01').sort((a,b)=>a.date.localeCompare(b.date)),last=entries.at(-1);return last?{type,last,elapsed:Math.max(0,Math.round((Date.parse(today)-Date.parse(last.date))/DAY))}:null}).filter(Boolean).sort((a,b)=>a.elapsed-b.elapsed);
+}
+function todayForecasts(config){
+ const dated=config.results.filter(r=>r.date).map(r=>({...r,until:Math.round((Date.parse(r.date)-Date.parse(today))/DAY)})).sort((a,b)=>Date.parse(a.date)-Date.parse(b.date));
+ return {dated,missing:config.results.filter(r=>!r.date).length};
+}
+function showTodayDialog(config){
+ lastFocus=document.activeElement;
+ $('#dialog-kind').textContent='CALCULATION DATE';
+ $('#dialog-title').textContent='Today · '+date(today);
+ const field=(label,value)=>`<div><dt>${esc(label)}</dt><dd>${value}</dd></div>`;
+ const single=config.types.length===1,waits=todayWaits(config),latest=waits[0],longest=waits.at(-1),{dated,missing}=todayForecasts(config);
+ const selection=(single?esc(config.types[0]):'All model types')+(config.updates===false?' · releases only':' · releases and updates')+(config.year?' · '+config.year+' onward':'');
+ let html=`<h3>Selection in view</h3><dl>${field('Filters',selection)}`+(latest?field('Latest entry',esc(latest.last.name)+' · '+date(latest.last.date)+(latest.last.event==='update'?' <span class="small">model update</span>':'')):'')+'</dl>';
+ html+='<h3>The wait so far</h3>';
+ if(!latest)html+='<p>No dated entry matches these filters, so no wait is calculated.</p>';
+ else{const rows=single?[latest]:[latest,longest].filter((w,i,a)=>w&&a.findIndex(o=>o.type===w.type)===i);
+  html+=`<dl>${rows.map(w=>field(w.type+(rows.length>1?` (${w===latest?'most recent entry':'longest wait'})`:''),esc(w.last.name)+' · '+date(w.last.date)+' · '+(w.elapsed===0?'released today':plural(w.elapsed,'day')+' ago'))).join('')}</dl>`}
+ html+='<h3>Days until the next forecast per method</h3>';
+ if(!dated.length)html+='<p>No selected method has a forecast date for this selection yet.</p>';
+ else{const shown=single?dated:[...new Map(dated.map(r=>[r.name,r])).values()];
+  html+=`<dl>${shown.map(r=>`<div><dt><i class="dot" style="background:${r.color}"></i>${esc(single?r.name:r.modelType+' · '+r.name)}</dt><dd>${date(r.date)} <span class="${r.until>0?'':'past'}">${r.until>0?'in '+plural(r.until,'day'):r.until===0?'due today':plural(-r.until,'day')+' ago'}</span></dd></div>`).join('')}</dl>`;
+  if(missing)html+=`<p class="small">${plural(missing,'selected method')} ${missing===1?'has no':'have no'} forecast date and is${missing===1?'':' are'} not listed.</p>`}
+ html+='<p class="small">The dataset is updated manually, so newer entries may be missing. Forecasts are statistical projections from past gaps.</p>';
+ $('#dialog-content').innerHTML=html;
+ $('#point-dialog').showModal();
 }
 function modelCommentary(type,s){
  const gaps=s.gaps,n=gaps.length,p=text=>'<p>'+text+'</p>';
@@ -133,7 +172,7 @@ async function initialize(){
  renderEditorial(generation,latest);
  $('#generation-intro').textContent=`The dataset has ${plural(generation.dates.length,'generation release')} from ${date(generation.dates[0],true)} to ${date(generation.last.date,true)}, with ${plural(generation.gaps.length,'gap')} between them.`;
  const lastGaps=generation.gaps.slice(-3);$('#history-takeaway').innerHTML=`The latest generation releases were <strong>${dayList(lastGaps)}</strong> apart.`;$('#estimate-takeaway').innerHTML=`Historical mean: <strong>${date(generation.meanDate)}</strong>.<br>EMA: <strong>${date(generation.emaDate)}</strong>.`;
- sharedRange=[Date.parse(sorted[0].date),Math.max(Date.parse(latest.date),...types.flatMap(t=>predictions(t).filter(r=>['mean','ema'].includes(r.id)&&r.date).map(r=>Date.parse(r.date))))];
+ sharedRange=[Date.parse(sorted[0].date),Math.max(Date.parse(latest.date),Date.parse(today),...types.flatMap(t=>predictions(t).filter(r=>['mean','ema'].includes(r.id)&&r.date).map(r=>Date.parse(r.date))))];
  makeChart($('#overview-chart'),{title:'Qwen generation gaps with historical mean and EMA forecasts',types:['Generation'],results:predictions('Generation').filter(r=>['mean','ema'].includes(r.id))});
  const cutoff=Date.parse(latest.date)-365*DAY,gapCount=t=>F.summarize(history(t)).gaps.filter(g=>g>=F.MIN_SPACING).length,featured=types.filter(t=>t!=='Generation'&&gapCount(t)>0&&Date.parse(F.summarize(history(t)).last.date)>=cutoff);
  $('#featured-rule').textContent=`These cards show model types that have at least 1 gap of ${F.MIN_SPACING} days or more and an entry in the 12 months before the latest entry, ${date(latest.date)}.`;featured.forEach((type,i)=>modelCard(type,$('#model-grid'),i));
