@@ -14,16 +14,23 @@ async function run(name){
  try{
   for(const viewport of [{width:1440,height:900},{width:393,height:700}]){
    const page=await browser.newPage({viewport});
+   const forceFallback=process.env.CADENCE_DIALOG_FALLBACK==='1';
+   if(forceFallback)await page.addInitScript(()=>{delete HTMLDialogElement.prototype.closedBy});
    await page.route('**/*',async route=>{
     const url=new URL(route.request().url());
     if(url.origin!==origin)return route.abort();
     const file=path.resolve(root,'.'+(url.pathname==='/'?'/index.html':url.pathname));
     if(!file.startsWith(root+path.sep))return route.fulfill({status:403,body:''});
-    try{return route.fulfill({body:await fs.readFile(file),contentType:mime[path.extname(file)]||'application/octet-stream'})}
+    try{
+     let body=await fs.readFile(file);
+     if(forceFallback&&path.extname(file)==='.html')body=Buffer.from(body.toString().replace(' closedby="any"',''));
+     return route.fulfill({body,contentType:mime[path.extname(file)]||'application/octet-stream'});
+    }
     catch{return route.fulfill({status:404,body:''})}
    });
    await page.goto(origin+'/');
    await page.waitForSelector('#overview-chart [role="button"]');
+   await page.evaluate(async()=>{await document.fonts.ready;await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))});
    const read=()=>page.evaluate(()=>({x:scrollX,y:scrollY,width:document.documentElement.clientWidth,left:document.querySelector('main').getBoundingClientRect().left}));
    const wheel=async(x,y,dy)=>{await page.mouse.move(x,y);await page.mouse.wheel(0,dy);await page.waitForTimeout(250)};
    for(const tall of [false,true])for(const dismissal of ['button','escape','backdrop']){
@@ -56,14 +63,15 @@ async function run(name){
     await page.waitForFunction(()=>!document.querySelector('#point-dialog').open);
     assert.notEqual(await page.evaluate(()=>getComputedStyle(document.documentElement).overflow),'hidden');
     assert.deepEqual(await read(),before,'dismissal must preserve page position');
-    assert.equal(await page.evaluate(()=>document.activeElement.dataset.key),'release|Generation|2023-08-03','native focus must return');
+    if(dismissal==='escape')assert.equal(await page.evaluate(()=>document.activeElement.dataset.key),'release|Generation|2023-08-03','keyboard dismissal must return focus');
+    assert.ok(await page.evaluate(()=>!document.querySelector('#point-dialog').contains(document.activeElement)),'focus must not remain in the closed dialog');
     await wheel(2,2,300);
     assert.ok((await read()).y>before.y,'normal page scrolling must resume');
    }
    await page.evaluate(()=>{const d=document.querySelector('#point-dialog');d.show()});
    assert.notEqual(await page.evaluate(()=>getComputedStyle(document.documentElement).overflow),'hidden','non-modal dialogs must not lock scrolling');
    await page.close();
-   console.log(`${name} ${viewport.width}px: short/overflowing details, backdrop/boundary scrolling, all dismissals, position/width preservation and unlocking passed.`);
+   console.log(`${name} ${viewport.width}px: short/overflowing details, backdrop/boundary scrolling, all dismissals, position/width preservation and unlocking passed (${forceFallback?'fallback':'native'}).`);
   }
  }finally{await browser.close()}
 }

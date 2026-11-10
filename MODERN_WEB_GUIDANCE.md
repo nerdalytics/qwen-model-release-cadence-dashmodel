@@ -58,7 +58,11 @@ The Pages workflow also runs `node scripts/test-dialog-scroll-browser.cjs` with
 Playwright 1.65.0 in Chromium and WebKit at desktop and phone viewport sizes.
 It exercises wheel gestures over the backdrop and inside short/overflowing
 dialogs, both scroll boundaries, close-button/Escape/backdrop dismissal,
-position and width preservation, native focus return, and scroll unlocking.
+position and width preservation, keyboard focus return, and scroll unlocking.
+It repeats these checks with native `closedby` disabled to cover the Safari
+light-dismiss fallback. Pointer dismissal is checked for focus escaping the
+closed dialog rather than an exact active element, which varies across WebKit
+platforms. Keyboard dismissal still requires focus to return to the opener.
 This engine-level test does not replace physical iPhone touch testing.
 
 The legacy scan checks only its deterministic subset (approximately 20% of the
