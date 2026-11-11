@@ -1,6 +1,6 @@
 # Release data source audit
 
-Checked on **Nov 8, 2026** with web searches followed by full-page fetches of official announcement blogs and dated news in official repositories. The 38 curated, source-checked entries replace the original 16-record demo.
+Checked on **Nov 8, 2026** with web searches followed by full-page fetches of official announcement blogs and dated news in official repositories. The original audit contains 38 curated, source-checked entries replacing the 16-record demo. A targeted official-source check on **Nov 11, 2026** adds Qwen4-Max Preview, bringing the dataset to 39 entries; older entries retain their original check dates.
 
 ## Terms
 
@@ -13,7 +13,13 @@ Checked on **Nov 8, 2026** with web searches followed by full-page fetches of of
 
 The dataset covers curated core and general-purpose language and coding milestones, public API releases, open-weight releases and announced capability updates. It is not an exhaustive model catalogue or an automatic live feed.
 
-Dates come from first-party announcements or from dated news in an official repository. An API release and a later open-weight release are separate entries. Models released together in 1 dated family or size announcement count as 1 entry. The dataset leaves out quantizations, silent file commits, previews, and specialized image, audio, Omni, VL-only, robotics, embedding and safety families. Announcements after the latest entry may exist.
+Dates come from first-party announcements or from dated news in an official repository. An API release and a later open-weight release are separate entries. Models released together in 1 dated family or size announcement count as 1 entry. Publicly usable API or hosted previews count as releases and are explicitly labelled as previews. Coming-soon announcements without public access do not count. The dataset leaves out quantizations, silent file commits, and specialized image, audio, Omni, VL-only, robotics, embedding and safety families. Announcements after the latest entry may exist.
+
+## Qwen4 public preview
+
+The [official Qwen announcement on X](https://x.com/Alibaba_Qwen/status/2120335993643684315), published **Nov 11, 2026 at 02:01 UTC**, states that Qwen4-Max is now in preview on Alibaba’s Token Plan, with early access through QwenWork, Qoder, Qwen APP and QwenStudio. Both the visible post timestamp and its `article:published_time` metadata confirm the date. The supplied Model Studio screenshot lists `qwen4-max-preview` as a new model; it corroborates the API name but supplies no release date.
+
+**Qwen4-Max Preview** counts as a release in **Generation** and **Max**, because public access is available, not merely promised. Its generation is 4 and its availability remains explicitly preview-only. The evidence does not establish general availability, open weights or a parameter size; none is inferred. The scope now includes publicly usable previews rather than excluding every preview by name. A later distribution milestone must not count as another generation. Historical preview coverage has not been re-audited.
 
 ## Corrections to the original sample
 
@@ -42,7 +48,7 @@ The dataset adds early size expansions, the Sep 2023 checkpoint update, Qwen1.5 
 
 ## Evidence and official sources
 
-[data/releases.json](data/releases.json) holds the complete entry-level audit. Each of the 38 entries has `sourceIds`, dated `evidence`, `verification`, `verifiedAt`, `availability`, and notes where needed. The `sources` dictionary maps each reference to its official URL and title. The page shows these sources and the evidence when a reader selects an entry.
+[data/releases.json](data/releases.json) holds the complete entry-level audit. Each of the 39 entries has `sourceIds`, dated `evidence`, `verification`, `verifiedAt`, `availability`, and notes where needed. The `sources` dictionary maps each reference to its official URL and title. The page shows these sources and the evidence when a reader selects an entry.
 
 Primary sources include the [original Qwen repository](https://github.com/QwenLM/Qwen), the [Qwen3 repository](https://github.com/qwenLM/qwen3), the [Qwen3.8 repository](https://github.com/QwenLM/Qwen3.8), and official announcement blogs at qwen.ai, qwenlm.github.io and alibabacloud.com. The JSON links each announcement.
 

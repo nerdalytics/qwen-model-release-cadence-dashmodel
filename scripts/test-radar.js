@@ -1,13 +1,15 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),F=require('../forecast.js'),dataset=require('../data/releases.json');
 const source=fs.readFileSync(require.resolve('../radar.js'),'utf8'),settings={'#model-select':{value:'all'},'#include-updates':{checked:true},'#conditioned':{checked:false},'#year-select':{value:'all'}};
-const context=vm.createContext({CadenceForecast:F,document:{querySelector:s=>settings[s]},localStorage:{getItem:()=>null}});
+const testDate=new Date(Math.max(...dataset.releases.map(r=>Date.parse(r.date)))+86400000);
+const testForecast={...F,forecasts:(rows,options)=>F.forecasts(rows,{...options,now:testDate})};
+const context=vm.createContext({CadenceForecast:testForecast,document:{querySelector:s=>settings[s]},localStorage:{getItem:()=>null}});
 vm.runInContext(source.split('function showDetails(')[0],context);
 context.inputRows=dataset.releases;vm.runInContext('rows=inputRows;types=F.types(rows)',context);
 vm.runInContext(source.split('\n').find(line=>line.startsWith('function explorerConfig(')),context);
 let config=vm.runInContext('explorerConfig()',context);
 assert.equal(config.results.length,F.types(dataset.releases).length*F.algorithms.length);
 for(const type of F.types(dataset.releases)){
- const expected=F.forecasts(dataset.releases.filter(r=>r.modelTypes.includes(type)),{type,peers:dataset.releases});
+ const expected=F.forecasts(dataset.releases.filter(r=>r.modelTypes.includes(type)),{type,peers:dataset.releases,now:testDate});
  for(const r of config.results.filter(r=>r.modelType===type)){
   assert.equal(r.date,expected.find(e=>e.id===r.id).date);
   assert.ok(r.color.startsWith('var(--method-'));
