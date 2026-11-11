@@ -11,3 +11,5 @@ h1,h2,h3,h4,.eyebrow,.algorithm-choice{overflow-wrap:anywhere}
 @container chart-zoom (min-width:24rem){.range-ticks span:not(:first-child,:last-child){display:block}}
 
 html:has(dialog:modal){overflow:hidden}
+
+.sort-control{display:flex;flex-direction:column;gap:.35rem;min-inline-size:0;font-size:.875rem}.sort-control select{min-block-size:44px;max-inline-size:100%;padding:.5rem;background:var(--panel);color:var(--text);border:1px solid var(--muted);font:inherit}.point[data-scrubbing] .halo{stroke:var(--text);stroke-width:3}.point[data-scrubbing] .mark{stroke:var(--text);stroke-width:3}.point-choices{display:grid;gap:.5rem}.point-choices button{text-align:start;min-block-size:44px;padding:.75rem}.chart-host:has([data-scrubbing]){user-select:none;-webkit-user-select:none}.chart-tooltip[role=status]{inset:.5rem .5rem auto .5rem;max-inline-size:none}

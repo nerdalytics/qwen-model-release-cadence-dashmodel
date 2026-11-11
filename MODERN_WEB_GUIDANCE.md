@@ -68,3 +68,11 @@ This engine-level test does not replace physical iPhone touch testing.
 The legacy scan checks only its deterministic subset (approximately 20% of the
 catalog); zero findings are not a complete accessibility or compatibility audit.
 No new transitions, polyfills, or unrelated UI features were introduced.
+
+## Chart interaction follow-up
+
+History paths now start at the first-entry diamond; its baseline position still means no gap is available, not a measured zero-day gap. Captions use a short marker key and interaction hint. Pointer selection uses geometric distance instead of SVG stacking order. A touch hold activates a highlighted cluster selection; vertical dragging changes the highlighted point and release opens its details. Scrolling before the hold threshold, cancellation, and two-finger zoom retain their existing behavior. Exact overlaps expose native buttons in the existing modal dialog. Keyboard navigation remains available.
+
+Native labelled selects sort the forecast readout and release log by date or name in either direction. Missing forecast dates stay last. CSV export follows the filtered, sorted release log. The updated chart styles leave Safari's root scroll lock untouched.
+
+The workflow additionally runs `scripts/test-chart-controls.js` and `scripts/test-chart-controls-browser.cjs`. Browser coverage includes every Max forecast target, exact-overlap choices, hold/drag/release and cancellation, keyboard selection, pinch zoom, four sort orders, filtering, and mobile overflow in Chromium and WebKit. Chromium uses native emulated touch input; WebKit's touch-state checks use dispatched touch events. This is automated browser coverage, not a physical iPhone test.

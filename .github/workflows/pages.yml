@@ -23,7 +23,7 @@ jobs:
           python-version: '3.12'
       - uses: actions/configure-pages@v5
       - name: Check forecast calculations
-        run: node scripts/test-forecasts.js && node scripts/test-algorithms.js && node scripts/test-combined-forecasts.js && node scripts/test-theme.js && node scripts/test-radar.js && node scripts/test-copy.js && node scripts/test-ui-regressions.js
+        run: node scripts/test-forecasts.js && node scripts/test-algorithms.js && node scripts/test-combined-forecasts.js && node scripts/test-theme.js && node scripts/test-radar.js && node scripts/test-copy.js && node scripts/test-ui-regressions.js && node scripts/test-chart-controls.js
       - name: Install image renderer
         run: python -m pip install CairoSVG==2.7.1 Pillow==11.3.0
       - name: Generate previews from current release data
@@ -38,6 +38,7 @@ jobs:
         run: |
           node scripts/test-dialog-scroll-browser.cjs
           CADENCE_DIALOG_FALLBACK=1 node scripts/test-dialog-scroll-browser.cjs
+          node scripts/test-chart-controls-browser.cjs
       - name: Prepare static site
         run: |
           mkdir _site

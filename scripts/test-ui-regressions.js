@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('nod
 const source=fs.readFileSync(require.resolve('../radar.js'),'utf8');
 function element(tag){return {tag,attrs:{},dataset:{},children:[],listeners:{},setAttribute(k,v){this.attrs[k]=v;if(k==='data-key')this.dataset.key=v},append(...nodes){this.children.push(...nodes)},replaceChildren(...nodes){this.children=nodes},addEventListener(k,fn){this.listeners[k]=fn},contains(){return false}}}
 const document={querySelector(){return null},createElement:element,createElementNS:(_,tag)=>element(tag)};
-const context=vm.createContext({CadenceForecast:F,document,localStorage:{getItem:()=>null},syncZoom(){},showDetails(){}});
+const context=vm.createContext({CadenceForecast:F,CadenceControls:{bindPoints:()=>()=>{}},document,localStorage:{getItem:()=>null},syncZoom(){},showDetails(){}});
 vm.runInContext(source.split('function showDetails(')[0],context);
 context.inputRows=dataset.releases;vm.runInContext('rows=inputRows',context);
 vm.runInContext(source.slice(source.indexOf('function drawChart('),source.indexOf('function modelCommentary(')),context);
@@ -21,6 +21,7 @@ for(const width of [250,320,393,852,1440])for(const updates of [true,false])for(
   const clip=nodes.find(n=>n.tag==='clipPath').children[0];
   assert.ok(halo.attrs.cy+r<=clip.attrs.y+clip.attrs.height,type+' baseline touch target fits vertically');
  }
+ const historyLine=nodes.find(n=>n.attrs.class==='history-line');if(markers.length>1){assert.ok(historyLine,type+' connects first entry');const halo=markers[0].children.find(n=>n.attrs.class==='halo');assert.ok(historyLine.attrs.d.startsWith('M'+halo.attrs.cx+','+halo.attrs.cy),type+' starts at diamond')}
  checked++;
 }
 const dismissal=source.slice(source.indexOf("const pointDialog=$('#point-dialog');"),source.indexOf("window.addEventListener('scroll',syncBackTop"));
@@ -53,7 +54,7 @@ assert.ok(/dialog::backdrop\{overflow:hidden;overscroll-behavior:contain\}/.test
 assert.ok(/html:has\(dialog:modal\)\{overflow:hidden\}/.test(styles),'modal dialogs must lock root scrolling even in Safari');
 assert.ok(/html\{scrollbar-gutter:stable;/.test(styles),'the root scrollbar gutter stays reserved during modal scroll locking');
 assert.ok(!/html:has\(dialog\[open\]\)/.test(styles),'non-modal dialogs must not lock page scrolling');
-assert.ok(page.includes('radar.css?v=20'),'the corrected scroll-lock stylesheet must bypass cached v19 CSS');
+assert.ok(page.includes('radar.css?v=21'),'the corrected scroll-lock stylesheet must bypass cached v19 CSS');
 assert.ok(page.includes('<dialog id="point-dialog" closedby="any"'));
 assert.ok(/<form method="dialog"><button id="dialog-close"[^>]*autofocus/.test(page),'close and initial focus are native');
 assert.ok(!source.includes('lastFocus'),'focus restoration belongs to the native dialog');
