@@ -11,7 +11,8 @@
  function bindPoints(svg,targets,{select,choose,preview,clear,suppress}){
   let gesture=null,timer=null,blockedUntil=0;
   const position=(clientX,clientY)=>{const box=svg.getBoundingClientRect(),view=svg.viewBox.baseVal;return {x:(clientX-box.left)*view.width/box.width,y:(clientY-box.top)*view.height/box.height}};
-  const nearby=(p,radius)=>targets.map(t=>({...t,distance:Math.hypot(t.x-p.x,t.y-p.y)})).filter(t=>t.distance<=radius).sort((a,b)=>a.distance-b.distance||a.key.localeCompare(b.key));
+  const visible=()=>{const view=svg.viewBox.baseVal;return targets.filter(t=>t.x>=0&&t.x<=view.width&&t.y>=0&&t.y<=view.height)};
+  const nearby=(p,radius)=>visible().map(t=>({...t,distance:Math.hypot(t.x-p.x,t.y-p.y)})).filter(t=>t.distance<=radius).sort((a,b)=>a.distance-b.distance||a.key.localeCompare(b.key));
   const stop=()=>{clearTimeout(timer);timer=null;if(gesture?.active)clear();gesture=null};
   const highlight=()=>{const {candidates,index}=gesture;preview(candidates[index],index,candidates.length)};
   svg.addEventListener('click',event=>{
@@ -24,8 +25,9 @@
   },true);
   svg.addEventListener('touchstart',event=>{
    stop();if(event.touches.length!==1)return;
-   const touch=event.touches[0],candidates=nearby(position(touch.clientX,touch.clientY),44);if(!candidates.length)return;
-   gesture={id:touch.identifier,startX:touch.clientX,startY:touch.clientY,candidates,index:0,active:false};
+   const touch=event.touches[0],nearest=nearby(position(touch.clientX,touch.clientY),44)[0];if(!nearest)return;
+   const candidates=visible().sort((a,b)=>a.x-b.x||a.y-b.y||a.key.localeCompare(b.key)),startIndex=candidates.findIndex(t=>t.node===nearest.node);
+   gesture={id:touch.identifier,startX:touch.clientX,startY:touch.clientY,candidates,startIndex,index:startIndex,active:false};
    timer=setTimeout(()=>{if(!gesture)return;gesture.active=true;blockedUntil=performance.now()+1000;suppress(blockedUntil);highlight()},400);
   },{passive:true});
   svg.addEventListener('touchmove',event=>{
@@ -35,7 +37,7 @@
    if(!gesture.active){if(Math.hypot(touch.clientX-gesture.startX,touch.clientY-gesture.startY)>10)stop();return}
    event.preventDefault();
    const step=Math.round((touch.clientY-gesture.startY)/32),count=gesture.candidates.length;
-   gesture.index=((step%count)+count)%count;highlight();
+   gesture.index=(((gesture.startIndex+step)%count)+count)%count;highlight();
   },{passive:false});
   svg.addEventListener('touchend',event=>{
    if(!gesture)return;

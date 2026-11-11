@@ -4,7 +4,7 @@ Has Qwen's release pace slowed? Compare the gaps between Qwen releases with the 
 
 [Open Cadence](https://nerdalytics.github.io/qwen-model-release-cadence-dashmodel/)
 
-Start with the generation history and the method comparison. Separate model type cards cover API tiers such as Max, Plus and Flash, coding models and individual sizes. In Explore, choose a model type and pick from 10 forecasting methods. Tap a point to see its source or calculation. On touchscreens, hold a cluster for a moment, drag up or down to highlight a point, then release to open it. Exact overlaps also offer a labelled choice list. Arrow keys move between chart points; Enter opens details.
+Start with the generation history and the method comparison. Separate model type cards cover API tiers such as Max, Plus and Flash, coding models and individual sizes. In Explore, choose a model type and pick from 10 forecasting methods. Tap a point to see its source or calculation. On touchscreens, hold any release or forecast point for a moment, drag up or down through all visible markers in chart order, then release to open the highlighted point. This works on model cards and in Explore, including historical clusters and first-entry diamonds. Exact overlaps also offer a labelled choice list. Arrow keys move between chart points; Enter opens details.
 
 Sort selected forecasts and the release log by date or name in either direction. Forecasts default to earliest first; release entries default to latest first. Search the release log or export matching entries as CSV in the selected order. The page follows the light or dark theme of your device and remembers your method selection.
 
